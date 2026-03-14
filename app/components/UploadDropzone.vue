@@ -1,0 +1,110 @@
+<script setup lang="ts">
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
+const isDragging = ref(false)
+
+const emit = defineEmits<{
+  fileSelected: [file: File]
+  invalidFile: []
+}>()
+
+function selectFile() {
+  fileInput.value?.click()
+}
+
+function handleFile(file?: File | null) {
+  if (!file || file.type !== 'application/pdf') {
+    emit('invalidFile')
+    return
+  }
+
+  emit('fileSelected', file)
+}
+
+function onChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  handleFile(target.files?.[0] ?? null)
+  target.value = ''
+}
+
+function onDrop(event: DragEvent) {
+  isDragging.value = false
+  handleFile(event.dataTransfer?.files?.[0] ?? null)
+}
+</script>
+
+<template>
+  <div
+    class="dropzone card"
+    :class="{ 'dropzone--active': isDragging }"
+    role="button"
+    tabindex="0"
+    @click="selectFile"
+    @keydown.enter.prevent="selectFile"
+    @keydown.space.prevent="selectFile"
+    @dragover.prevent="isDragging = true"
+    @dragleave.prevent="isDragging = false"
+    @drop.prevent="onDrop"
+  >
+    <input
+      ref="fileInput"
+      class="sr-only"
+      type="file"
+      accept="application/pdf"
+      @change="onChange"
+    >
+
+    <div class="dropzone__icon" aria-hidden="true">
+      <svg width="72" height="88" viewBox="0 0 72 88" fill="none">
+        <path d="M14 2h30l14 14v68a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" fill="#fff" stroke="currentColor" stroke-width="2" />
+        <path d="M44 2v14h14" stroke="currentColor" stroke-width="2" />
+        <path d="M10 40h52v24H10z" fill="#dfead2" stroke="currentColor" stroke-width="2" />
+        <path d="M20 57h8.4c5.5 0 8.3-3.2 8.3-8.2s-2.8-8.2-8.3-8.2H20V57Zm5.4-4.4v-7.9h2.7c2.1 0 3.2 1.5 3.2 4s-1.1 4-3.2 4h-2.7Zm14.5 4.4V40.6h7.5c5.1 0 7.8 2.6 7.8 8.2S52.5 57 47.4 57h-7.5Zm5.4-4.4h1.5c2.1 0 3-1.4 3-3.8s-.9-3.8-3-3.8h-1.5v7.6Zm12.4 4.4V40.6h12.4v4.2h-7v2.2H69v4.1h-5.9V57h-5.4Z" fill="currentColor" />
+      </svg>
+    </div>
+
+    <div class="dropzone__content">
+      <p class="dropzone__title">Arraste ou selecione seu arquivo PDF.</p>
+      <p class="dropzone__description">
+        Na proxima etapa vamos extrair o texto do curriculo e enviar para analise.
+      </p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.dropzone {
+  display: grid;
+  gap: 20px;
+  justify-items: center;
+  padding: 40px 24px;
+  border-style: dashed;
+  border-radius: 28px;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.dropzone:hover,
+.dropzone--active {
+  transform: translateY(-2px);
+  border-color: var(--secondary);
+  background: #fbfcff;
+}
+
+.dropzone__content {
+  text-align: center;
+}
+
+.dropzone__title {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.dropzone__description {
+  margin: 0;
+  color: var(--muted);
+}
+</style>
