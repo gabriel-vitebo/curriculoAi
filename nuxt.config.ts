@@ -15,9 +15,13 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint'],
 
   tailwindcss: {
     cssPath: '~/assets/css/main.css',
+  },
+
+  eslint: {
+    checker: false,
   },
 })

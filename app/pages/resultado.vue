@@ -1,46 +1,3 @@
-<script setup lang="ts">
-import type { AnalysisSummary } from '~/types/cv-analysis'
-
-const route = useRoute()
-
-const analysis = computed<AnalysisSummary>(() => ({
-  overallScore: 7.5,
-  distribution: [
-    { label: 'Bem estruturado', value: 45, color: '#b7cfa7' },
-    { label: 'Aceitavel', value: 35, color: '#9bbad6' },
-    { label: 'Precisa de revisao', value: 20, color: '#e5c487' },
-  ],
-  sectionScores: [
-    { label: 'Profissional', score: 7, color: '#9bbad6' },
-    { label: 'Experiencias', score: 7, color: '#9bbad6' },
-    { label: 'Competencias', score: 9, color: '#7ea2c4' },
-    { label: 'Formacao', score: 7, color: '#9bbad6' },
-    { label: 'Clareza escrita', score: 8, color: '#b2b2b2' },
-  ],
-  strengths: [
-    'Estrutura de secoes facil de escanear.',
-    'Competencias tecnicas aparecem com clareza.',
-    'Experiencias com impacto razoavelmente visivel.',
-  ],
-  weaknesses: [
-    'Resumo profissional pouco especifico.',
-    'Resultados numericos ainda aparecem pouco.',
-    'Alguns blocos podem ficar mais objetivos.',
-  ],
-  suggestions: [
-    'Reescrever o resumo com foco no seu diferencial.',
-    'Adicionar metricas nas experiencias mais fortes.',
-    'Priorizar competencias aderentes a vaga alvo.',
-  ],
-  rewrittenSummary:
-    'Profissional com experiencia em ambientes digitais, atuando com foco em execucao, organizacao e entrega de resultados. Perfil orientado a melhoria continua, comunicacao clara e desenvolvimento de processos mais eficientes.',
-  interviewTips: [
-    'Prepare um exemplo concreto de impacto em projetos anteriores.',
-    'Treine respostas que conectem suas experiencias com a vaga desejada.',
-  ],
-}))
-</script>
-
 <template>
   <main class="mx-auto my-6 w-[min(1120px,calc(100%-32px))] border-2 border-[#2f2923] bg-[rgba(255,252,246,0.82)] shadow-[0_18px_60px_rgba(51,39,26,0.12)] backdrop-blur-[14px] max-md:my-2 max-md:w-[min(100%,calc(100%-16px))]">
     <AppHeader />
@@ -106,3 +63,46 @@ const analysis = computed<AnalysisSummary>(() => ({
     <AppFooter />
   </main>
 </template>
+
+<script setup lang="ts">
+import type { AnalysisSummary } from '~/types/cv-analysis'
+
+const route = useRoute()
+
+const analysis = computed<AnalysisSummary>(() => ({
+  overallScore: 7.5,
+  distribution: [
+    { label: 'Bem estruturado', value: 45, color: '#b7cfa7' },
+    { label: 'Aceitavel', value: 35, color: '#9bbad6' },
+    { label: 'Precisa de revisao', value: 20, color: '#e5c487' },
+  ],
+  sectionScores: [
+    { label: 'Profissional', score: 7, color: '#9bbad6' },
+    { label: 'Experiencias', score: 7, color: '#9bbad6' },
+    { label: 'Competencias', score: 9, color: '#7ea2c4' },
+    { label: 'Formacao', score: 7, color: '#9bbad6' },
+    { label: 'Clareza escrita', score: 8, color: '#b2b2b2' },
+  ],
+  strengths: [
+    'Estrutura de secoes facil de escanear.',
+    'Competencias tecnicas aparecem com clareza.',
+    'Experiencias com impacto razoavelmente visivel.',
+  ],
+  weaknesses: [
+    'Resumo profissional pouco especifico.',
+    'Resultados numericos ainda aparecem pouco.',
+    'Alguns blocos podem ficar mais objetivos.',
+  ],
+  suggestions: [
+    'Reescrever o resumo com foco no seu diferencial.',
+    'Adicionar metricas nas experiencias mais fortes.',
+    'Priorizar competencias aderentes a vaga alvo.',
+  ],
+  rewrittenSummary:
+    'Profissional com experiencia em ambientes digitais, atuando com foco em execucao, organizacao e entrega de resultados. Perfil orientado a melhoria continua, comunicacao clara e desenvolvimento de processos mais eficientes.',
+  interviewTips: [
+    'Prepare um exemplo concreto de impacto em projetos anteriores.',
+    'Treine respostas que conectem suas experiencias com a vaga desejada.',
+  ],
+}))
+</script>

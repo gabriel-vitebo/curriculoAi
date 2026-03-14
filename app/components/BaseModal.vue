@@ -1,14 +1,3 @@
-<script setup lang="ts">
-defineProps<{
-  title: string
-  description: string
-}>()
-
-const emit = defineEmits<{
-  close: []
-}>()
-</script>
-
 <template>
   <div class="fixed inset-0 z-30 grid place-items-center bg-[rgba(36,31,26,0.4)] p-5" role="presentation" @click="emit('close')">
     <div
@@ -26,3 +15,14 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+defineProps<{
+  title: string
+  description: string
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+</script>

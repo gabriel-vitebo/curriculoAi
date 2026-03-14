@@ -1,10 +1,3 @@
-<script setup lang="ts">
-defineProps<{
-  title: string
-  items: string[]
-}>()
-</script>
-
 <template>
   <section class="min-h-[220px] border-2 border-[#2f2923] bg-[#fffaf2]">
     <header class="border-b-2 border-[#2f2923] px-[22px] py-[18px]">
@@ -18,3 +11,10 @@ defineProps<{
     </ul>
   </section>
 </template>
+
+<script setup lang="ts">
+defineProps<{
+  title: string
+  items: string[]
+}>()
+</script>

@@ -1,16 +1,3 @@
-<script setup lang="ts">
-const showInvalidFileModal = ref(false)
-
-function handleFileSelected(file: File) {
-  navigateTo({
-    path: '/resultado',
-    query: {
-      file: file.name,
-    },
-  })
-}
-</script>
-
 <template>
   <main class="mx-auto my-6 w-[min(1120px,calc(100%-32px))] border-2 border-[#2f2923] bg-[rgba(255,252,246,0.82)] shadow-[0_18px_60px_rgba(51,39,26,0.12)] backdrop-blur-[14px] max-md:my-2 max-md:w-[min(100%,calc(100%-16px))]">
     <AppHeader />
@@ -59,3 +46,16 @@ function handleFileSelected(file: File) {
     />
   </main>
 </template>
+
+<script setup lang="ts">
+const showInvalidFileModal = ref(false)
+
+function handleFileSelected(file: File) {
+  navigateTo({
+    path: '/resultado',
+    query: {
+      file: file.name,
+    },
+  })
+}
+</script>
