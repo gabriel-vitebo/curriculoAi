@@ -6,38 +6,15 @@ defineProps<{
 </script>
 
 <template>
-  <section class="insight card">
-    <header class="insight__header">
-      <h3>{{ title }}</h3>
+  <section class="min-h-[220px] border-2 border-[#2f2923] bg-[#fffaf2]">
+    <header class="border-b-2 border-[#2f2923] px-[22px] py-[18px]">
+      <h3 class="m-0 text-[1.6rem]">{{ title }}</h3>
     </header>
 
-    <ul class="insight__list">
+    <ul class="m-0 grid gap-[18px] px-[30px] pb-[30px] pt-6">
       <li v-for="item in items" :key="item">
         {{ item }}
       </li>
     </ul>
   </section>
 </template>
-
-<style scoped>
-.insight {
-  min-height: 220px;
-}
-
-.insight__header {
-  padding: 18px 22px;
-  border-bottom: 2px solid var(--border);
-}
-
-.insight__header h3 {
-  margin: 0;
-  font-size: 1.6rem;
-}
-
-.insight__list {
-  margin: 0;
-  padding: 24px 30px 30px;
-  display: grid;
-  gap: 18px;
-}
-</style>

@@ -3,8 +3,8 @@ const version = 'Versao 1.0'
 </script>
 
 <template>
-  <footer class="page-footer">
-    <div class="footer-links">
+  <footer class="flex items-center justify-between gap-4 border-t-2 border-[#2f2923] px-7 py-5 text-[#6a6258] max-md:flex-col max-md:items-start max-md:px-[18px]">
+    <div class="inline-flex items-center gap-3">
       <a href="https://github.com/gabriel-vitebo/curriculoAi" target="_blank" rel="noreferrer">
         GitHub
       </a>
@@ -17,11 +17,3 @@ const version = 'Versao 1.0'
     <span>{{ version }}</span>
   </footer>
 </template>
-
-<style scoped>
-.footer-links {
-  display: inline-flex;
-  gap: 12px;
-  align-items: center;
-}
-</style>

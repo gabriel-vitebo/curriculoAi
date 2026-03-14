@@ -42,54 +42,54 @@ const analysis = computed<AnalysisSummary>(() => ({
 </script>
 
 <template>
-  <main class="page-shell">
+  <main class="mx-auto my-6 w-[min(1120px,calc(100%-32px))] border-2 border-[#2f2923] bg-[rgba(255,252,246,0.82)] shadow-[0_18px_60px_rgba(51,39,26,0.12)] backdrop-blur-[14px] max-md:my-2 max-md:w-[min(100%,calc(100%-16px))]">
     <AppHeader />
 
-    <section class="page-content results">
-      <div class="results__topbar">
-        <NuxtLink to="/" class="results__back">
+    <section class="grid gap-7 px-7 py-10 max-md:px-[18px]">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <NuxtLink to="/" class="text-[1.1rem] font-semibold">
           &lt; Importar outro curriculo
         </NuxtLink>
-        <span class="eyebrow">{{ route.query.file || 'Resultado da analise' }}</span>
+        <span class="inline-flex items-center gap-[10px] border border-[#2f2923] bg-[rgba(255,255,255,0.54)] px-[14px] py-[6px] text-[0.76rem] uppercase tracking-[0.14em]">{{ route.query.file || 'Resultado da analise' }}</span>
       </div>
 
-      <section class="results__overview">
-        <div class="card results__chart">
+      <section class="grid items-stretch gap-[18px] min-[1081px]:grid-cols-[1.05fr_1.2fr_220px]">
+        <div class="border-2 border-[#2f2923] bg-[#fffaf2] p-6">
           <ResultDonutChart :sections="analysis.distribution" />
         </div>
 
-        <div class="card results__bars">
+        <div class="border-2 border-[#2f2923] bg-[#fffaf2] p-6">
           <ResultSectionBars :items="analysis.sectionScores" />
         </div>
 
-        <aside class="card score-card">
-          <span>Nota</span>
-          <strong>{{ analysis.overallScore }}</strong>
-          <small>/10</small>
+        <aside class="grid aspect-square content-center justify-items-center rounded-full border-2 border-[#2f2923] bg-[#fffaf2] p-6 min-[1081px]:aspect-square max-[1080px]:min-h-[180px] max-[1080px]:rounded-[28px]">
+          <span class="text-[1.7rem]">Nota</span>
+          <strong class="text-[4rem] leading-none">{{ analysis.overallScore }}</strong>
+          <small class="text-[1.5rem]">/10</small>
         </aside>
       </section>
 
-      <section class="results__insights">
+      <section class="grid gap-[18px] min-[861px]:grid-cols-3">
         <InsightCard title="Pontos Fortes" :items="analysis.strengths" />
         <InsightCard title="Pontos Fracos" :items="analysis.weaknesses" />
         <InsightCard title="Sugestoes de Melhoria" :items="analysis.suggestions" />
       </section>
 
-      <section class="results__details">
-        <article class="card detail-card">
-          <header class="detail-card__header">
-            <h3>Melhoria no Resumo</h3>
+      <section class="grid gap-[18px] min-[861px]:grid-cols-2">
+        <article class="border-2 border-[#2f2923] bg-[#fffaf2] p-6">
+          <header class="border-b-2 border-[#2f2923] pb-4">
+            <h3 class="m-0 text-[1.7rem]">Melhoria no Resumo</h3>
           </header>
-          <div class="detail-card__body detail-card__body--highlight">
+          <div class="mt-[22px] border border-dashed border-[rgba(47,41,35,0.2)] bg-[rgba(255,255,255,0.54)] p-[22px]">
             {{ analysis.rewrittenSummary }}
           </div>
         </article>
 
-        <article class="card detail-card">
-          <header class="detail-card__header">
-            <h3>Dicas para Entrevista</h3>
+        <article class="border-2 border-[#2f2923] bg-[#fffaf2] p-6">
+          <header class="border-b-2 border-[#2f2923] pb-4">
+            <h3 class="m-0 text-[1.7rem]">Dicas para Entrevista</h3>
           </header>
-          <ul class="detail-card__list">
+          <ul class="m-0 grid gap-[14px] pl-[22px] pt-[22px]">
             <li v-for="tip in analysis.interviewTips" :key="tip">
               {{ tip }}
             </li>
@@ -97,133 +97,12 @@ const analysis = computed<AnalysisSummary>(() => ({
         </article>
       </section>
 
-      <div class="results__actions">
-        <button class="button" type="button">Baixar relatorio</button>
-        <button class="button button--primary" type="button">Salvar novo PDF</button>
+      <div class="flex flex-wrap justify-center gap-4">
+        <button class="inline-flex min-h-12 items-center justify-center gap-2 border-2 border-[#2f2923] bg-[#f0eadf] px-[18px] text-[#241f1a] transition-[transform,background-color] duration-150 hover:-translate-y-px hover:bg-[#e5ddcf]" type="button">Baixar relatorio</button>
+        <button class="inline-flex min-h-12 items-center justify-center gap-2 border-2 border-[#2f2923] bg-[#dfead2] px-[18px] text-[#241f1a] transition-[transform,background-color] duration-150 hover:-translate-y-px hover:bg-[#d2e2bf]" type="button">Salvar novo PDF</button>
       </div>
     </section>
 
     <AppFooter />
   </main>
 </template>
-
-<style scoped>
-.results {
-  display: grid;
-  gap: 28px;
-}
-
-.results__topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.results__back {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.results__overview {
-  display: grid;
-  grid-template-columns: 1.05fr 1.2fr 220px;
-  gap: 18px;
-  align-items: stretch;
-}
-
-.results__chart,
-.results__bars,
-.score-card,
-.detail-card {
-  padding: 24px;
-}
-
-.score-card {
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  border-radius: 999px;
-  aspect-ratio: 1;
-}
-
-.score-card span {
-  font-size: 1.7rem;
-}
-
-.score-card strong {
-  font-size: 4rem;
-  line-height: 1;
-}
-
-.score-card small {
-  font-size: 1.5rem;
-}
-
-.results__insights,
-.results__details {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.results__details {
-  grid-template-columns: 1fr 1fr;
-}
-
-.detail-card__header {
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--border);
-}
-
-.detail-card__header h3 {
-  margin: 0;
-  font-size: 1.7rem;
-}
-
-.detail-card__body,
-.detail-card__list {
-  margin: 0;
-  padding: 22px 0 0;
-}
-
-.detail-card__body--highlight {
-  padding: 22px;
-  margin-top: 22px;
-  border: 1px dashed var(--border-soft);
-  background: rgba(255, 255, 255, 0.54);
-}
-
-.detail-card__list {
-  display: grid;
-  gap: 14px;
-  padding-left: 22px;
-}
-
-.results__actions {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 1080px) {
-  .results__overview {
-    grid-template-columns: 1fr;
-  }
-
-  .score-card {
-    border-radius: 28px;
-    aspect-ratio: auto;
-    min-height: 180px;
-  }
-}
-
-@media (max-width: 860px) {
-  .results__insights,
-  .results__details {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

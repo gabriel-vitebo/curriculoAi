@@ -19,6 +19,7 @@
     "release:dry": "semantic-release --dry-run"
   },
   "dependencies": {
+    "@nuxtjs/tailwindcss": "^6.14.0",
     "nuxt": "^4.3.1",
     "vue": "^3.5.30",
     "vue-router": "^4.6.4"

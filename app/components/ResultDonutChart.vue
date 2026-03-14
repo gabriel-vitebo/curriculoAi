@@ -24,83 +24,31 @@ const segments = computed(() => {
 </script>
 
 <template>
-  <div class="donut">
-    <svg viewBox="0 0 200 200" class="donut__chart" aria-label="Distribuicao da avaliacao">
-      <circle cx="100" cy="100" :r="radius" class="donut__track" />
+  <div class="grid items-center gap-6 min-[861px]:grid-cols-[minmax(200px,260px)_1fr] min-[861px]:justify-items-stretch max-[860px]:justify-items-center">
+    <svg viewBox="0 0 200 200" class="w-full max-w-[240px] -rotate-90" aria-label="Distribuicao da avaliacao">
+      <circle cx="100" cy="100" :r="radius" fill="none" stroke="rgba(47, 41, 35, 0.1)" stroke-width="26" />
       <circle
         v-for="segment in segments"
         :key="segment.label"
         cx="100"
         cy="100"
         :r="radius"
-        class="donut__segment"
+        fill="none"
+        stroke-width="26"
         :style="{
           stroke: segment.color,
           strokeDasharray: segment.dash,
           strokeDashoffset: segment.offset,
         }"
       />
-      <circle cx="100" cy="100" r="46" class="donut__center" />
+      <circle cx="100" cy="100" r="46" fill="#fffaf2" />
     </svg>
 
-    <ul class="donut__legend">
+    <ul class="m-0 grid list-none gap-[14px] p-0 text-[1.15rem]">
       <li v-for="segment in sections" :key="segment.label">
-        <span class="donut__dot" :style="{ background: segment.color }" />
+        <span class="mr-[10px] inline-block h-[14px] w-[14px] rounded-full" :style="{ background: segment.color }" />
         <strong>{{ segment.value }}%</strong> {{ segment.label }}
       </li>
     </ul>
   </div>
 </template>
-
-<style scoped>
-.donut {
-  display: grid;
-  grid-template-columns: minmax(200px, 260px) 1fr;
-  gap: 24px;
-  align-items: center;
-}
-
-.donut__chart {
-  width: 100%;
-  max-width: 240px;
-  transform: rotate(-90deg);
-}
-
-.donut__track,
-.donut__segment {
-  fill: none;
-  stroke-width: 26;
-}
-
-.donut__track {
-  stroke: rgba(47, 41, 35, 0.1);
-}
-
-.donut__center {
-  fill: #fffaf2;
-}
-
-.donut__legend {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 14px;
-  font-size: 1.15rem;
-}
-
-.donut__dot {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  margin-right: 10px;
-}
-
-@media (max-width: 860px) {
-  .donut {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-}
-</style>

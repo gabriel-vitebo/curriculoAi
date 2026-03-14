@@ -34,8 +34,8 @@ function onDrop(event: DragEvent) {
 
 <template>
   <div
-    class="dropzone card"
-    :class="{ 'dropzone--active': isDragging }"
+    class="grid cursor-pointer justify-items-center gap-5 rounded-[28px] border-2 border-dashed border-[#2f2923] bg-[#fffaf2] px-6 py-10 transition-[transform,border-color,background-color] duration-180 ease-[ease] hover:-translate-y-0.5 hover:border-[#8eacc8] hover:bg-[#fbfcff]"
+    :class="isDragging ? '-translate-y-0.5 border-[#8eacc8] bg-[#fbfcff]' : ''"
     role="button"
     tabindex="0"
     @click="selectFile"
@@ -62,49 +62,11 @@ function onDrop(event: DragEvent) {
       </svg>
     </div>
 
-    <div class="dropzone__content">
-      <p class="dropzone__title">Arraste ou selecione seu arquivo PDF.</p>
-      <p class="dropzone__description">
+    <div class="text-center">
+      <p class="mb-2 text-2xl font-bold">Arraste ou selecione seu arquivo PDF.</p>
+      <p class="m-0 text-[#6a6258]">
         Na proxima etapa vamos extrair o texto do curriculo e enviar para analise.
       </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-.dropzone {
-  display: grid;
-  gap: 20px;
-  justify-items: center;
-  padding: 40px 24px;
-  border-style: dashed;
-  border-radius: 28px;
-  cursor: pointer;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background-color 180ms ease;
-}
-
-.dropzone:hover,
-.dropzone--active {
-  transform: translateY(-2px);
-  border-color: var(--secondary);
-  background: #fbfcff;
-}
-
-.dropzone__content {
-  text-align: center;
-}
-
-.dropzone__title {
-  margin: 0 0 8px;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.dropzone__description {
-  margin: 0;
-  color: var(--muted);
-}
-</style>
