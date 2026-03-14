@@ -6,6 +6,8 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 
 Make sure to install dependencies:
 
+Recommended Node.js version: `24.10.0`
+
 ```bash
 # npm
 npm install
@@ -73,3 +75,30 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Releases
+
+This project uses `semantic-release` to automate versioning and changelog generation from commits pushed to `main`.
+
+Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) so releases are calculated correctly:
+
+```bash
+feat: add CV export button
+fix: handle empty job description
+```
+
+Only some commit types create a new version by default:
+
+```bash
+feat: creates a minor release
+fix: creates a patch release
+feat!: creates a major release
+```
+
+Commits like `chore:`, `docs:` and `style:` do not create a release unless you configure custom release rules.
+
+To validate the setup locally without publishing a release:
+
+```bash
+npm run release:dry
+```
