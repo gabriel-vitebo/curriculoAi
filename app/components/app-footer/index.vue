@@ -10,10 +10,10 @@
       </a>
     </div>
 
-    <span>{{ version }}</span>
+    <span>{{ appVersion }}</span>
   </footer>
 </template>
 
 <script setup lang="ts">
-const version = 'Versao 1.0'
+const { public: { appVersion } } = useRuntimeConfig()
 </script>
