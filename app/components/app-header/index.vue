@@ -1,6 +1,3 @@
-<script setup lang="ts">
-</script>
-
 <template>
   <header 
     class="
@@ -22,11 +19,7 @@
         "
         aria-hidden="true"
       >
-        <img 
-          src="/icons/app-header-mark.svg" 
-          alt="icone do logo do site" 
-          class="h-6 w-6" 
-        />
+        <IconsAppHeaderMark class="h-6 w-6" />
       </span>
       <span>CurriculoAI</span>
     </NuxtLink>
@@ -44,3 +37,6 @@
     </nav>
   </header>
 </template>
+
+<script setup lang="ts">
+</script>

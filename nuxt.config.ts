@@ -1,3 +1,6 @@
+import { defineNuxtConfig } from 'nuxt/config'
+import { appVersion } from './config/app-version'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -15,12 +18,14 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint'],
+  modules: [
+    ['@nuxtjs/tailwindcss', { cssPath: '~/assets/css/main.css' }],
+    ['@nuxt/eslint', { checker: false }],
+  ],
 
-  tailwindcss: {
-    cssPath: '~/assets/css/main.css',
-  },
-  eslint: {
-    checker: false,
+  runtimeConfig: {
+    public: {
+      appVersion,
+    },
   },
 })

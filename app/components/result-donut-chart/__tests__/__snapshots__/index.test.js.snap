@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ResultDonutChart > renderiza a distribuicao da avaliacao 1`] = `
+"<div class="grid items-center gap-6 min-[861px]:grid-cols-[minmax(200px,260px)_1fr] min-[861px]:justify-items-stretch max-[860px]:justify-items-center"><svg viewBox="0 0 200 200" class="w-full max-w-[240px] -rotate-90" aria-label="Distribuicao da avaliacao">
+    <circle cx="100" cy="100" r="74" fill="none" stroke="rgba(47, 41, 35, 0.1)" stroke-width="26"></circle>
+    <circle cx="100" cy="100" r="74" fill="none" stroke-width="26" style="stroke: #5b8def; stroke-dasharray: 209.23007072908024 464.9557127312894; stroke-dashoffset: 0;"></circle>
+    <circle cx="100" cy="100" r="74" fill="none" stroke-width="26" style="stroke: #f59e0b; stroke-dasharray: 139.4867138193868 464.9557127312894; stroke-dashoffset: -209.23007072908024;"></circle>
+    <circle cx="100" cy="100" r="74" fill="none" stroke-width="26" style="stroke: #10b981; stroke-dasharray: 116.23892818282235 464.9557127312894; stroke-dashoffset: -348.71678454846705;"></circle>
+    <circle cx="100" cy="100" r="46" fill="#fffaf2"></circle>
+  </svg>
+  <ul class="m-0 grid list-none gap-[14px] p-0 text-[1.15rem]">
+    <li><span class="mr-[10px] inline-block h-[14px] w-[14px] rounded-full" style="background: #5b8def;"></span><strong>45%</strong> Conteudo</li>
+    <li><span class="mr-[10px] inline-block h-[14px] w-[14px] rounded-full" style="background: #f59e0b;"></span><strong>30%</strong> Clareza</li>
+    <li><span class="mr-[10px] inline-block h-[14px] w-[14px] rounded-full" style="background: #10b981;"></span><strong>25%</strong> Formato</li>
+  </ul>
+</div>"
+`;
