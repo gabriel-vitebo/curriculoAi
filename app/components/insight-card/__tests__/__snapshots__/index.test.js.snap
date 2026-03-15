@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`InsightCard > renderiza o titulo e a lista de insights 1`] = `
+"<section class="min-h-[220px] border-2 border-ink bg-surface">
+  <header class="border-b-2 border-ink px-[22px] py-[18px]">
+    <h3 class="m-0 text-[1.6rem]">Pontos fortes</h3>
+  </header>
+  <ul class="m-0 grid gap-[18px] px-[30px] pb-[30px] pt-6">
+    <li>Resumo objetivo</li>
+    <li>Experiencia relevante</li>
+    <li>Boas palavras-chave</li>
+  </ul>
+</section>"
+`;

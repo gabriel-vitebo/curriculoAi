@@ -1,6 +1,3 @@
-<script setup lang="ts">
-</script>
-
 <template>
   <header 
     class="
@@ -44,3 +41,6 @@
     </nav>
   </header>
 </template>
+
+<script setup lang="ts">
+</script>

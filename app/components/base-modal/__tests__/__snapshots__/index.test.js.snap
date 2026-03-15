@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BaseModal > renderiza o conteudo do modal 1`] = `
+"<div class="fixed inset-0 z-30 grid place-items-center bg-overlay p-5" role="presentation">
+  <div class="w-full max-w-[480px] border-2 border-ink bg-surface p-7 text-center" role="dialog" aria-modal="true" aria-label="Analise concluida">
+    <p class="mb-2 text-2xl font-bold">Analise concluida</p>
+    <p class="mb-6 text-muted-ink">Seu curriculo foi processado com sucesso.</p><button class="inline-flex min-h-12 items-center justify-center gap-2 border-2 border-ink bg-button-neutral bg-button-neutral-hover px-[18px] text-ink transition-[transform,background-color] duration-150 hover:-translate-y-px" type="button"> OK </button>
+  </div>
+</div>"
+`;

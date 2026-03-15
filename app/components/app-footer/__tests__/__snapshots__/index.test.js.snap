@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppFooter > renderiza os links do rodape e a versao 1`] = `
+"<footer class="flex items-center justify-between gap-4 border-t-2 border-ink px-7 py-5 text-muted-ink max-md:flex-col max-md:items-start max-md:px-[18px]">
+  <div class="inline-flex items-center gap-3"><a href="https://github.com/gabriel-vitebo/curriculoAi" target="_blank" rel="noreferrer"> GitHub </a><span>|</span><a href="https://github.com/gabriel-vitebo/curriculoAi/releases" target="_blank" rel="noreferrer"> Releases </a></div><span>Versao 1.0</span>
+</footer>"
+`;
