@@ -93,9 +93,10 @@ Only some commit types create a new version by default:
 feat: creates a minor release
 fix: creates a patch release
 feat!: creates a major release
+chore: creates a patch release in this project
 ```
 
-Commits like `chore:`, `docs:` and `style:` do not create a release unless you configure custom release rules.
+Commits like `docs:` and `style:` do not create a release unless you configure custom release rules.
 
 To validate the setup locally without publishing a release:
 
