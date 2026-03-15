@@ -20,7 +20,6 @@ export default defineNuxtConfig({
   tailwindcss: {
     cssPath: '~/assets/css/main.css',
   },
-
   eslint: {
     checker: false,
   },

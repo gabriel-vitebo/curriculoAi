@@ -1,6 +1,6 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { expect } from 'vitest'
-import AppHeader from '~/components/AppHeader.vue'
+import AppHeader from '~/components/app-header/index.vue'
 
 describe('AppHeader', () => {
   it('renders the project branding and navigation label', async () => {
