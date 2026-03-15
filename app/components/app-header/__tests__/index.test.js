@@ -1,16 +1,14 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import { expect } from 'vitest'
-import AppHeader from '~/components/app-header/index.vue'
+import { describe, expect, it } from 'vitest'
+import AppHeader from '../index.vue'
 
 describe('AppHeader', () => {
-  it('renders the project branding and navigation label', async () => {
+  it('renderiza a marca do projeto e o selo de navegacao', async () => {
     const wrapper = await mountSuspended(AppHeader)
 
     expect(wrapper.text()).toContain('CurriculoAI')
     expect(wrapper.text()).toContain('Nuxt 4 + OpenAI')
-
-    const homeLink = wrapper.find('a[href="/"]')
-    expect(homeLink.exists()).toBe(true)
+    expect(wrapper.find('a[href="/"]').exists()).toBe(true)
     expect(wrapper.html()).toMatchSnapshot()
   })
 })

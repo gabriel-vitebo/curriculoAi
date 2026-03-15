@@ -1,5 +1,5 @@
 <template>
-  <footer class="flex items-center justify-between gap-4 border-t-2 border-[#2f2923] px-7 py-5 text-[#6a6258] max-md:flex-col max-md:items-start max-md:px-[18px]">
+  <footer class="flex items-center justify-between gap-4 border-t-2 border-ink px-7 py-5 text-muted-ink max-md:flex-col max-md:items-start max-md:px-[18px]">
     <div class="inline-flex items-center gap-3">
       <a href="https://github.com/gabriel-vitebo/curriculoAi" target="_blank" rel="noreferrer">
         GitHub

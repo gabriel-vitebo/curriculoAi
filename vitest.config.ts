@@ -4,7 +4,10 @@ export default defineVitestConfig({
   test: {
     environment: 'nuxt',
     globals: true,
-    include: ['tests/nuxt/**/*.nuxt.spec.ts'],
+    include: [
+      'tests/nuxt/**/*.nuxt.spec.ts',
+      'app/components/**/__tests__/**/*.test.js',
+    ],
     environmentOptions: {
       nuxt: {
         mock: {

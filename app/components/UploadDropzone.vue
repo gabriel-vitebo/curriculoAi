@@ -1,7 +1,7 @@
 <template>
   <div
-    class="grid cursor-pointer justify-items-center gap-5 rounded-[28px] border-2 border-dashed border-[#2f2923] bg-[#fffaf2] px-6 py-10 transition-[transform,border-color,background-color] duration-180 ease-[ease] hover:-translate-y-0.5 hover:border-[#8eacc8] hover:bg-[#fbfcff]"
-    :class="isDragging ? '-translate-y-0.5 border-[#8eacc8] bg-[#fbfcff]' : ''"
+    class="grid cursor-pointer justify-items-center gap-5 rounded-[28px] border-2 border-dashed border-ink bg-surface px-6 py-10 transition-[transform,border-color,background-color] duration-180 ease-[ease] hover:-translate-y-0.5 hover:border-accent hover:bg-accent-soft"
+    :class="isDragging ? '-translate-y-0.5 border-accent bg-accent-soft' : ''"
     role="button"
     tabindex="0"
     @click="selectFile"
@@ -30,7 +30,7 @@
 
     <div class="text-center">
       <p class="mb-2 text-2xl font-bold">Arraste ou selecione seu arquivo PDF.</p>
-      <p class="m-0 text-[#6a6258]">
+      <p class="m-0 text-muted-ink">
         Na proxima etapa vamos extrair o texto do curriculo e enviar para analise.
       </p>
     </div>

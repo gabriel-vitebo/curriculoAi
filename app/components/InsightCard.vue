@@ -1,6 +1,6 @@
 <template>
-  <section class="min-h-[220px] border-2 border-[#2f2923] bg-[#fffaf2]">
-    <header class="border-b-2 border-[#2f2923] px-[22px] py-[18px]">
+  <section class="min-h-[220px] border-2 border-ink bg-surface">
+    <header class="border-b-2 border-ink px-[22px] py-[18px]">
       <h3 class="m-0 text-[1.6rem]">{{ title }}</h3>
     </header>
 
