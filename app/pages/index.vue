@@ -1,5 +1,5 @@
 <template>
-  <main class="mx-auto my-6 w-[min(1120px,calc(100%-32px))] border-2 border-ink bg-panel shadow-panel backdrop-blur-[14px] max-md:my-2 max-md:w-[min(100%,calc(100%-16px))]">
+  <main class="mx-auto w-[min(1120px,calc(100%-32px))] border-2 border-ink bg-panel shadow-panel backdrop-blur-[14px] max-md:my-2 max-md:w-[min(100%,calc(100%-16px))]">
     <AppHeader />
 
     <section class="grid gap-8 px-7 py-10 max-md:px-[18px]">
