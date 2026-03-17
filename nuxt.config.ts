@@ -24,8 +24,12 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    openaiApiKey: 'INSERT_YOUR_OPENAI_API_KEY_HERE',
-    openaiModel: 'gpt-4.1-mini',
+    openaiApiKey: process.env.OPENAI_API_KEY || '',
+    openaiModel: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+    cvMaxPdfBytes: Number(process.env.CV_MAX_PDF_BYTES || 5 * 1024 * 1024),
+    cvMinTextChars: Number(process.env.CV_MIN_TEXT_CHARS || 180),
+    cvMaxTextCharsToAI: Number(process.env.CV_MAX_TEXT_CHARS_TO_AI || 12000),
+    cvDuplicateWindowMs: Number(process.env.CV_DUPLICATE_WINDOW_MS || 120000),
     public: {
       appVersion,
     },

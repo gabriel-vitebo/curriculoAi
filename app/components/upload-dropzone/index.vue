@@ -35,10 +35,12 @@
 <script setup lang="ts">
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 const isDragging = ref(false)
+const maxPdfBytes = 5 * 1024 * 1024
 
 const emit = defineEmits<{
   fileSelected: [file: File]
   invalidFile: []
+  invalidSize: [limitMB: number]
 }>()
 
 function selectFile() {
@@ -48,6 +50,11 @@ function selectFile() {
 function handleFile(file?: File | null) {
   if (!file || file.type !== 'application/pdf') {
     emit('invalidFile')
+    return
+  }
+
+  if (file.size > maxPdfBytes) {
+    emit('invalidSize', Math.floor(maxPdfBytes / (1024 * 1024)))
     return
   }
 

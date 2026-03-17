@@ -1,16 +1,19 @@
-export interface SectionScore {
-  label: string
-  score: number
-  color: string
-}
+export type SeniorityLevel =
+  | 'estagio'
+  | 'junior'
+  | 'pleno'
+  | 'senior'
+  | 'especialista'
+  | 'indefinido'
 
-export interface AnalysisSummary {
-  overallScore: number
-  distribution: Array<{ label: string, value: number, color: string }>
-  sectionScores: SectionScore[]
-  strengths: string[]
-  weaknesses: string[]
-  suggestions: string[]
-  rewrittenSummary: string
-  interviewTips: string[]
+export interface CvAnalysisResult {
+  resumoProfissional: string
+  pontosFortes: string[]
+  pontosFracos: string[]
+  habilidadesIdentificadas: string[]
+  senioridadeEstimada: SeniorityLevel
+  notaGeral: number
+  sugestoesMelhoria: string[]
+  observacoesAusentes: string[]
+  avisoAutomacao: string
 }
