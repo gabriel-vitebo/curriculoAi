@@ -24,6 +24,8 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
+    openaiApiKey: 'INSERT_YOUR_OPENAI_API_KEY_HERE',
+    openaiModel: 'gpt-4.1-mini',
     public: {
       appVersion,
     },
