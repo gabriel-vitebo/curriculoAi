@@ -1,10 +1,17 @@
 import { createHash } from 'node:crypto'
 import { createError, getRequestIP, readMultipartFormData } from 'h3'
-import pdfParse from 'pdf-parse'
+import { PDFParse } from 'pdf-parse'
 import type { CvAnalysisResult, SeniorityLevel } from '~/types/cv-analysis'
 
 type OpenAIResponse = {
   output_text?: string
+  output?: Array<{
+    type?: string
+    content?: Array<{
+      type?: string
+      text?: string
+    }>
+  }>
 }
 
 type CachedAnalysis = {
@@ -42,6 +49,21 @@ function safeParseJson(raw: string) {
     .trim()
 
   return JSON.parse(cleaned) as Record<string, unknown>
+}
+
+function getResponseText(response: OpenAIResponse) {
+  if (response.output_text?.trim()) {
+    return response.output_text
+  }
+
+  const textParts =
+    response.output
+      ?.flatMap((item) => item.content || [])
+      .filter((contentItem) => contentItem.type === 'output_text' && typeof contentItem.text === 'string')
+      .map((contentItem) => contentItem.text?.trim() || '')
+      .filter(Boolean) || []
+
+  return textParts.join('\n').trim()
 }
 
 function normalizeTextList(value: unknown, fallback: string, maxItems = 6) {
@@ -142,7 +164,9 @@ export default defineEventHandler(async (event) => {
   let extractedText = ''
 
   try {
-    const parsed = await pdfParse(filePart.data)
+    const parser = new PDFParse({ data: filePart.data })
+    const parsed = await parser.getText()
+    await parser.destroy()
     extractedText = String(parsed.text || '')
       .split('\u0000')
       .join(' ')
@@ -182,18 +206,6 @@ export default defineEventHandler(async (event) => {
     'Analise somente o texto informado. Nao invente dados que nao estejam no curriculo.',
     'Quando faltar informacao (idiomas, certificacoes etc.), registre em observacoesAusentes.',
     'Seja objetivo: textos curtos e acionaveis.',
-    'Retorne APENAS JSON valido sem markdown e sem texto fora do JSON.',
-    'Formato obrigatorio do JSON:',
-    '{',
-    '  "resumoProfissional": "string",',
-    '  "pontosFortes": ["string"],',
-    '  "pontosFracos": ["string"],',
-    '  "habilidadesIdentificadas": ["string"],',
-    '  "senioridadeEstimada": "estagio|junior|pleno|senior|especialista|indefinido",',
-    '  "notaGeral": 0-10,',
-    '  "sugestoesMelhoria": ["string"],',
-    '  "observacoesAusentes": ["string"]',
-    '}',
     'Regras adicionais:',
     '- Pontos fortes/fracos/sugestoes: no maximo 5 itens cada.',
     '- Habilidades: no maximo 10 itens.',
@@ -216,10 +228,87 @@ export default defineEventHandler(async (event) => {
       body: {
         model: config.openaiModel,
         input: prompt,
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'cv_analysis',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                resumoProfissional: {
+                  type: 'string',
+                },
+                pontosFortes: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                  maxItems: 5,
+                },
+                pontosFracos: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                  maxItems: 5,
+                },
+                habilidadesIdentificadas: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                  maxItems: 10,
+                },
+                senioridadeEstimada: {
+                  type: 'string',
+                  enum: ['estagio', 'junior', 'pleno', 'senior', 'especialista', 'indefinido'],
+                },
+                notaGeral: {
+                  type: 'number',
+                  minimum: 0,
+                  maximum: 10,
+                },
+                sugestoesMelhoria: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                  maxItems: 5,
+                },
+                observacoesAusentes: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                  maxItems: 8,
+                },
+              },
+              required: [
+                'resumoProfissional',
+                'pontosFortes',
+                'pontosFracos',
+                'habilidadesIdentificadas',
+                'senioridadeEstimada',
+                'notaGeral',
+                'sugestoesMelhoria',
+                'observacoesAusentes',
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
       },
     })
 
-    parsedResult = safeParseJson(String(response.output_text || ''))
+    const responseText = getResponseText(response)
+
+    if (!responseText) {
+      console.error('Resposta da OpenAI sem texto utilizavel:', response)
+      throw new Error('Resposta vazia da OpenAI.')
+    }
+
+    parsedResult = safeParseJson(responseText)
   } catch (error) {
     console.error('Falha ao analisar curriculo com OpenAI:', error)
     throw toFriendlyError(502, 'Nao foi possivel analisar o curriculo neste momento. Tente novamente mais tarde.')
