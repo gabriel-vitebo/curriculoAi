@@ -14,7 +14,8 @@
 
       <UploadDropzone
         @file-selected="handleFileSelected"
-        @invalid-file="showInvalidFileModal = true"
+        @invalid-file="handleInvalidFile"
+        @invalid-size="handleInvalidSize"
       />
 
       <section class="grid gap-5 border-2 border-ink bg-surface p-6 min-[861px]:grid-cols-3">
@@ -41,7 +42,7 @@
     <BaseModal
       v-if="showInvalidFileModal"
       title="Arquivo invalido"
-      description="Por favor, envie um arquivo PDF."
+      :description="fileErrorMessage"
       @close="showInvalidFileModal = false"
     />
   </main>
@@ -49,13 +50,28 @@
 
 <script setup lang="ts">
 const showInvalidFileModal = ref(false)
+const fileErrorMessage = ref('Formato invalido. Envie um curriculo em PDF.')
+const selectedCvFile = useSelectedCvFile()
+const cvAnalysisResult = useCvAnalysisResult()
 
 function handleFileSelected(file: File) {
+  selectedCvFile.value = file
+  cvAnalysisResult.value = null
   navigateTo({
     path: '/resultado',
     query: {
       file: file.name,
     },
   })
+}
+
+function handleInvalidSize(limitMB: number) {
+  fileErrorMessage.value = `Arquivo muito grande. Envie um PDF de ate ${limitMB} MB.`
+  showInvalidFileModal.value = true
+}
+
+function handleInvalidFile() {
+  fileErrorMessage.value = 'Formato invalido. Envie um curriculo em PDF.'
+  showInvalidFileModal.value = true
 }
 </script>

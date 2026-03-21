@@ -24,6 +24,12 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
+    openaiApiKey: '',
+    openaiModel: 'gpt-4.1-mini',
+    cvMaxPdfBytes: 5 * 1024 * 1024,
+    cvMinTextChars: 180,
+    cvMaxTextCharsToAI: 12000,
+    cvDuplicateWindowMs: 120000,
     public: {
       appVersion,
     },
