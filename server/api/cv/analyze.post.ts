@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { createError, getRequestIP, readMultipartFormData } from 'h3'
 import { PDFParse } from 'pdf-parse'
-import type { CvAnalysisResult, SeniorityLevel } from '~/types/cv-analysis'
+import type { CvAnalysisResult, CvDistributionItem, CvSectionScore, SeniorityLevel } from '~/types/cv-analysis'
 
 type OpenAIResponse = {
   output_text?: string
@@ -115,15 +115,101 @@ function clampScore(value: unknown) {
   return Math.max(0, Math.min(10, Number(asNumber.toFixed(1))))
 }
 
+function normalizeSectionScores(value: unknown, notaGeral: number): CvSectionScore[] {
+  const fallbackSections: CvSectionScore[] = [
+    { label: 'Profissional', score: notaGeral || 6, color: '#8bb8e8' },
+    { label: 'Experiencias', score: notaGeral || 6, color: '#9ec5ee' },
+    { label: 'Competencias', score: notaGeral || 6, color: '#7faad9' },
+    { label: 'Formacao', score: notaGeral || 6, color: '#b7c8d9' },
+    { label: 'Clareza escrita', score: notaGeral || 6, color: '#a7b8c8' },
+  ]
+
+  if (!Array.isArray(value)) {
+    return fallbackSections
+  }
+
+  const colorByIndex = ['#8bb8e8', '#9ec5ee', '#7faad9', '#b7c8d9', '#a7b8c8']
+
+  const normalized = value
+    .map((item, index) => {
+      if (!item || typeof item !== 'object') {
+        return null
+      }
+
+      const section = item as { label?: unknown, score?: unknown }
+      const label = String(section.label || '').trim()
+
+      if (!label) {
+        return null
+      }
+
+      return {
+        label,
+        score: clampScore(section.score),
+        color: colorByIndex[index] || colorByIndex[colorByIndex.length - 1],
+      }
+    })
+    .filter((item): item is CvSectionScore => Boolean(item))
+    .slice(0, 5)
+
+  return normalized.length > 0 ? normalized : fallbackSections
+}
+
+function buildQualityDistribution(sectionScores: CvSectionScore[]): CvDistributionItem[] {
+  const total = sectionScores.length || 1
+  const buckets = [
+    {
+      label: 'Bem estruturado',
+      count: sectionScores.filter((item) => item.score >= 8).length,
+      color: '#b9d4a3',
+    },
+    {
+      label: 'Aceitavel',
+      count: sectionScores.filter((item) => item.score >= 6 && item.score < 8).length,
+      color: '#9bbbd5',
+    },
+    {
+      label: 'Precisa de revisao',
+      count: sectionScores.filter((item) => item.score < 6).length,
+      color: '#e8c488',
+    },
+  ]
+
+  let consumed = 0
+
+  return buckets.map((bucket, index) => {
+    const value =
+      index === buckets.length - 1
+        ? Math.max(0, 100 - consumed)
+        : Math.round((bucket.count / total) * 100)
+
+    consumed += value
+
+    return {
+      label: bucket.label,
+      value,
+      color: bucket.color,
+    }
+  })
+}
+
 function normalizeAnalysis(raw: Record<string, unknown>): CvAnalysisResult {
+  const notaGeral = clampScore(raw.notaGeral)
+  const avaliacaoPorSecao = normalizeSectionScores(raw.avaliacaoPorSecao, notaGeral)
+
   return {
     resumoProfissional: String(raw.resumoProfissional || '').trim() || 'Resumo nao identificado no curriculo.',
+    resumoOtimizado:
+      String(raw.resumoOtimizado || '').trim() || 'Resumo otimizado indisponivel. Revise clareza, impacto e palavras-chave.',
     pontosFortes: normalizeTextList(raw.pontosFortes, 'Nao foi possivel identificar pontos fortes com clareza.'),
     pontosFracos: normalizeTextList(raw.pontosFracos, 'Nao foi possivel identificar pontos fracos com clareza.'),
     habilidadesIdentificadas: normalizeTextList(raw.habilidadesIdentificadas, 'Nenhuma habilidade identificada.'),
     senioridadeEstimada: normalizeSeniority(raw.senioridadeEstimada),
-    notaGeral: clampScore(raw.notaGeral),
+    notaGeral,
+    avaliacaoPorSecao,
+    distribuicaoQualidade: buildQualityDistribution(avaliacaoPorSecao),
     sugestoesMelhoria: normalizeTextList(raw.sugestoesMelhoria, 'Revisar clareza, organizacao e completude do curriculo.'),
+    dicasEntrevista: normalizeTextList(raw.dicasEntrevista, 'Prepare exemplos de resultados, desafios e tecnologias usadas.', 5),
     observacoesAusentes: normalizeTextList(raw.observacoesAusentes, 'Nao ha observacoes adicionais de ausencia de dados.', 8),
     avisoAutomacao:
       'Analise automatizada por IA. Use este resultado como apoio e valide os pontos com revisao humana.',
@@ -209,7 +295,11 @@ export default defineEventHandler(async (event) => {
     'Regras adicionais:',
     '- Pontos fortes/fracos/sugestoes: no maximo 5 itens cada.',
     '- Habilidades: no maximo 10 itens.',
+    '- Gere um resumoOtimizado com ate 600 caracteres, pronto para reaproveitar no curriculo.',
+    '- Gere dicasEntrevista com no maximo 4 itens, objetivas e baseadas no perfil identificado.',
     '- Nota geral com 1 casa decimal.',
+    '- Gere avaliacaoPorSecao com exatamente 5 itens: Profissional, Experiencias, Competencias, Formacao e Clareza escrita.',
+    '- Cada item de avaliacaoPorSecao deve ter label e score de 0 a 10.',
     '- Linguagem simples em portugues do Brasil.',
     '',
     'Texto do curriculo para analise:',
@@ -237,6 +327,9 @@ export default defineEventHandler(async (event) => {
               type: 'object',
               properties: {
                 resumoProfissional: {
+                  type: 'string',
+                },
+                resumoOtimizado: {
                   type: 'string',
                 },
                 pontosFortes: {
@@ -269,12 +362,39 @@ export default defineEventHandler(async (event) => {
                   minimum: 0,
                   maximum: 10,
                 },
+                avaliacaoPorSecao: {
+                  type: 'array',
+                  minItems: 5,
+                  maxItems: 5,
+                  items: {
+                    type: 'object',
+                    properties: {
+                      label: {
+                        type: 'string',
+                      },
+                      score: {
+                        type: 'number',
+                        minimum: 0,
+                        maximum: 10,
+                      },
+                    },
+                    required: ['label', 'score'],
+                    additionalProperties: false,
+                  },
+                },
                 sugestoesMelhoria: {
                   type: 'array',
                   items: {
                     type: 'string',
                   },
                   maxItems: 5,
+                },
+                dicasEntrevista: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                  maxItems: 4,
                 },
                 observacoesAusentes: {
                   type: 'array',
@@ -286,12 +406,15 @@ export default defineEventHandler(async (event) => {
               },
               required: [
                 'resumoProfissional',
+                'resumoOtimizado',
                 'pontosFortes',
                 'pontosFracos',
                 'habilidadesIdentificadas',
                 'senioridadeEstimada',
                 'notaGeral',
+                'avaliacaoPorSecao',
                 'sugestoesMelhoria',
+                'dicasEntrevista',
                 'observacoesAusentes',
               ],
               additionalProperties: false,
