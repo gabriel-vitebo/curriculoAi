@@ -6,7 +6,7 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 
 Make sure to install dependencies:
 
-Recommended Node.js version: `24.10.0`
+Recommended Node.js version: `24`
 
 ```bash
 # npm
