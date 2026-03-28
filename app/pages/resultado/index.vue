@@ -273,14 +273,280 @@ function downloadReport() {
     return
   }
 
-  const blob = new Blob([report], { type: 'text/plain;charset=utf-8' })
+  const blob = buildPdfBlob(report)
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
 
   link.href = url
-  link.download = 'curriculo-ai-relatorio.txt'
+  link.download = buildReportFilename()
   link.click()
 
   URL.revokeObjectURL(url)
+}
+
+function buildReportFilename() {
+  const originalName = String(route.query.file || '').trim()
+  const normalizedName = originalName.replace(/\.pdf$/i, '').trim()
+  const baseName = normalizedName || 'curriculo-ai-relatorio'
+
+  return `${baseName}-relatorio.pdf`
+}
+
+function buildPdfBlob(report: string) {
+  const fontSize = 12
+  const lineHeight = 16
+  const pageWidth = 595
+  const pageHeight = 842
+  const marginX = 56
+  const marginTop = 64
+  const marginBottom = 64
+  const maxCharsPerLine = 72
+  const usableHeight = pageHeight - marginTop - marginBottom
+  const linesPerPage = Math.max(1, Math.floor(usableHeight / lineHeight))
+  const wrappedLines = wrapTextForPdf(report, maxCharsPerLine)
+  const pages = chunkLines(wrappedLines, linesPerPage)
+  const objects: Uint8Array[] = []
+  const pageObjectIds: number[] = []
+  let objectId = 1
+
+  const catalogObjectId = objectId++
+  const pagesObjectId = objectId++
+  const fontObjectId = objectId++
+
+  for (const pageLines of pages) {
+    const contentStream = buildPdfContentStream(pageLines, {
+      fontSize,
+      lineHeight,
+      pageHeight,
+      marginLeft: marginX,
+      marginTop,
+    })
+    const contentObjectId = objectId++
+    const pageObjectId = objectId++
+
+    objects[contentObjectId] = concatPdfBytes([
+      encodeAscii(`<< /Length ${contentStream.length} >>\nstream\n`),
+      contentStream,
+      encodeAscii('\nendstream'),
+    ])
+    objects[pageObjectId] = encodeAscii(`<< /Type /Page /Parent ${pagesObjectId} 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 ${fontObjectId} 0 R >> >> /Contents ${contentObjectId} 0 R >>`)
+    pageObjectIds.push(pageObjectId)
+  }
+
+  objects[catalogObjectId] = encodeAscii(`<< /Type /Catalog /Pages ${pagesObjectId} 0 R >>`)
+  objects[pagesObjectId] = encodeAscii(`<< /Type /Pages /Kids [${pageObjectIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${pageObjectIds.length} >>`)
+  objects[fontObjectId] = encodeAscii('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>')
+
+  return new Blob([serializePdfDocument(buildPdfObjectList(objects, objectId - 1))], { type: 'application/pdf' })
+}
+
+function wrapTextForPdf(text: string, maxCharsPerLine: number) {
+  const normalizedText = text.replace(/\r\n/g, '\n')
+  const paragraphs = normalizedText.split('\n')
+  const wrappedLines: string[] = []
+
+  for (const paragraph of paragraphs) {
+    const trimmedParagraph = paragraph.trim()
+
+    if (!trimmedParagraph) {
+      wrappedLines.push('')
+      continue
+    }
+
+    let currentLine = ''
+
+    for (const word of trimmedParagraph.split(/\s+/)) {
+      const candidate = currentLine ? `${currentLine} ${word}` : word
+
+      if (candidate.length <= maxCharsPerLine) {
+        currentLine = candidate
+        continue
+      }
+
+      if (currentLine) {
+        wrappedLines.push(currentLine)
+      }
+
+      currentLine = word
+    }
+
+    if (currentLine) {
+      wrappedLines.push(currentLine)
+    }
+  }
+
+  return wrappedLines.length ? wrappedLines : ['']
+}
+
+function chunkLines(lines: string[], linesPerPage: number) {
+  const pages: string[][] = []
+
+  for (let index = 0; index < lines.length; index += linesPerPage) {
+    pages.push(lines.slice(index, index + linesPerPage))
+  }
+
+  return pages.length ? pages : [['']]
+}
+
+function buildPdfContentStream(
+  lines: string[],
+  layout: {
+    fontSize: number
+    lineHeight: number
+    pageHeight: number
+    marginLeft: number
+    marginTop: number
+  },
+) {
+  const startY = layout.pageHeight - layout.marginTop
+  const parts: Uint8Array[] = [
+    encodeAscii('BT\n'),
+    encodeAscii(`/F1 ${layout.fontSize} Tf\n`),
+    encodeAscii(`${layout.lineHeight} TL\n`),
+    encodeAscii(`${layout.marginLeft} ${startY} Td\n`),
+  ]
+
+  lines.forEach((line, index) => {
+    if (index > 0) {
+      parts.push(encodeAscii('T*\n'))
+    }
+
+    parts.push(encodeAscii('('))
+    parts.push(escapePdfText(line))
+    parts.push(encodeAscii(') Tj\n'))
+  })
+
+  parts.push(encodeAscii('ET'))
+
+  return concatPdfBytes(parts)
+}
+
+function escapePdfText(value: string) {
+  const escapedBytes: number[] = []
+
+  for (const byte of encodeWinAnsi(value)) {
+    if (byte === 0x5c || byte === 0x28 || byte === 0x29) {
+      escapedBytes.push(0x5c)
+    }
+
+    escapedBytes.push(byte)
+  }
+
+  return new Uint8Array(escapedBytes)
+}
+
+function buildPdfObjectList(objects: Uint8Array[], lastObjectId: number) {
+  const objectList: Uint8Array[] = [new Uint8Array()]
+
+  for (let index = 1; index <= lastObjectId; index += 1) {
+    const objectBytes = objects[index]
+
+    if (!objectBytes) {
+      throw new Error(`PDF object ${index} was not created.`)
+    }
+
+    objectList.push(objectBytes)
+  }
+
+  return objectList
+}
+
+function serializePdfDocument(objects: Uint8Array[]) {
+  const header = encodeAscii('%PDF-1.4\n')
+  const parts: Uint8Array[] = [header]
+  const offsets: number[] = []
+  let currentOffset = header.length
+
+  objects.slice(1).forEach((objectBytes, objectIndex) => {
+    const index = objectIndex + 1
+    offsets[index] = currentOffset
+
+    const serializedObject = concatPdfBytes([
+      encodeAscii(`${index} 0 obj\n`),
+      objectBytes,
+      encodeAscii('\nendobj\n'),
+    ])
+
+    parts.push(serializedObject)
+    currentOffset += serializedObject.length
+  })
+
+  const xrefOffset = currentOffset
+  let xref = `xref\n0 ${objects.length}\n`
+  xref += '0000000000 65535 f \n'
+
+  for (let index = 1; index < objects.length; index += 1) {
+    xref += `${String(offsets[index]).padStart(10, '0')} 00000 n \n`
+  }
+
+  xref += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`
+  parts.push(encodeAscii(xref))
+
+  return concatPdfBytes(parts)
+}
+
+function concatPdfBytes(parts: Uint8Array[]) {
+  const totalLength = parts.reduce((sum, part) => sum + part.length, 0)
+  const result = new Uint8Array(totalLength)
+  let offset = 0
+
+  for (const part of parts) {
+    result.set(part, offset)
+    offset += part.length
+  }
+
+  return result
+}
+
+function encodeAscii(value: string) {
+  return new TextEncoder().encode(value)
+}
+
+function encodeWinAnsi(value: string) {
+  const bytes: number[] = []
+
+  for (const char of value) {
+    const codePoint = char.codePointAt(0) ?? 0x3f
+
+    if ((codePoint >= 0x20 && codePoint <= 0x7e) || (codePoint >= 0xa0 && codePoint <= 0xff)) {
+      bytes.push(codePoint)
+      continue
+    }
+
+    const mappedByte = WIN_ANSI_MAP[char]
+    bytes.push(mappedByte ?? 0x3f)
+  }
+
+  return new Uint8Array(bytes)
+}
+
+const WIN_ANSI_MAP: Record<string, number> = {
+  '€': 0x80,
+  '‚': 0x82,
+  'ƒ': 0x83,
+  '„': 0x84,
+  '…': 0x85,
+  '†': 0x86,
+  '‡': 0x87,
+  'ˆ': 0x88,
+  '‰': 0x89,
+  'Š': 0x8a,
+  '‹': 0x8b,
+  'Œ': 0x8c,
+  'Ž': 0x8e,
+  '‘': 0x91,
+  '’': 0x92,
+  '“': 0x93,
+  '”': 0x94,
+  '•': 0x95,
+  '–': 0x96,
+  '—': 0x97,
+  '˜': 0x98,
+  '™': 0x99,
+  'š': 0x9a,
+  '›': 0x9b,
+  'œ': 0x9c,
+  'ž': 0x9e,
+  'Ÿ': 0x9f,
 }
 </script>
