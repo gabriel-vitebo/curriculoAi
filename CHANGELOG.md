@@ -1,3 +1,13 @@
+## [2.0.0](https://github.com/gabriel-vitebo/curriculoAi/compare/v1.1.1...v2.0.0) (2026-03-28)
+
+### ⚠ BREAKING CHANGES
+
+* analysis now supports explicit submission and area-oriented scoring.
+
+### Features
+
+* redesign CV analysis flow ([#7](https://github.com/gabriel-vitebo/curriculoAi/issues/7)) ([f975fdf](https://github.com/gabriel-vitebo/curriculoAi/commit/f975fdfe493e39c1873ca89f9e6d7d7afb1a2039))
+
 ## [1.1.1](https://github.com/gabriel-vitebo/curriculoAi/compare/v1.1.0...v1.1.1) (2026-03-28)
 
 ## [1.1.0](https://github.com/gabriel-vitebo/curriculoAi/compare/v1.0.4...v1.1.0) (2026-03-25)
