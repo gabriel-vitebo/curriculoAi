@@ -79,6 +79,13 @@ function normalizeTextList(value: unknown, fallback: string, maxItems = 6) {
   return normalized.length > 0 ? normalized : [fallback]
 }
 
+function normalizeDesiredArea(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 120)
+}
+
 function normalizeSeniority(value: unknown): SeniorityLevel {
   const normalized = String(value || '')
     .toLowerCase()
@@ -193,11 +200,12 @@ function buildQualityDistribution(sectionScores: CvSectionScore[]): CvDistributi
   })
 }
 
-function normalizeAnalysis(raw: Record<string, unknown>): CvAnalysisResult {
+function normalizeAnalysis(raw: Record<string, unknown>, desiredArea: string): CvAnalysisResult {
   const notaGeral = clampScore(raw.notaGeral)
   const avaliacaoPorSecao = normalizeSectionScores(raw.avaliacaoPorSecao, notaGeral)
 
   return {
+    areaAlvo: normalizeDesiredArea(raw.areaAlvo) || desiredArea,
     resumoProfissional: String(raw.resumoProfissional || '').trim() || 'Resumo nao identificado no curriculo.',
     resumoOtimizado:
       String(raw.resumoOtimizado || '').trim() || 'Resumo otimizado indisponivel. Revise clareza, impacto e palavras-chave.',
@@ -230,6 +238,9 @@ export default defineEventHandler(async (event) => {
 
   const formData = await readMultipartFormData(event)
   const filePart = formData?.find((part) => part.name === 'file')
+  const desiredArea = normalizeDesiredArea(
+    formData?.find((part) => part.name === 'desiredArea')?.data?.toString('utf8'),
+  )
 
   if (!filePart?.data) {
     throw toFriendlyError(400, 'Envie um arquivo PDF para analise.')
@@ -271,9 +282,10 @@ export default defineEventHandler(async (event) => {
     throw toFriendlyError(400, 'O curriculo possui pouco conteudo para analise. Adicione mais informacoes e tente novamente.')
   }
 
-  const hash = createHash('sha256').update(filePart.data).digest('hex')
+  const fileHash = createHash('sha256').update(filePart.data).digest('hex')
+  const areaHash = createHash('sha256').update(desiredArea || '__general__').digest('hex')
   const ip = getRequestIP(event, { xForwardedFor: true }) || 'anonymous'
-  const dedupeKey = `${ip}:${hash}`
+  const dedupeKey = `${ip}:${fileHash}:${areaHash}`
   const cacheStore = getCacheStore()
   const cached = cacheStore.get(dedupeKey)
   const now = Date.now()
@@ -292,6 +304,12 @@ export default defineEventHandler(async (event) => {
     'Analise somente o texto informado. Nao invente dados que nao estejam no curriculo.',
     'Quando faltar informacao (idiomas, certificacoes etc.), registre em observacoesAusentes.',
     'Seja objetivo: textos curtos e acionaveis.',
+    desiredArea
+      ? `Considere que a vaga ou objetivo principal do usuario e atuar na area: ${desiredArea}.`
+      : 'Considere uma analise geral de qualidade do curriculo, sem area alvo especifica.',
+    desiredArea
+      ? 'A nota geral deve refletir fortemente a aderencia do curriculo a essa area. Se o curriculo estiver bem escrito, mas pouco alinhado com a area desejada, a nota deve cair.'
+      : 'A nota geral deve refletir clareza, organizacao, impacto e completude do curriculo.',
     'Regras adicionais:',
     '- Pontos fortes/fracos/sugestoes: no maximo 5 itens cada.',
     '- Habilidades: no maximo 10 itens.',
@@ -301,6 +319,9 @@ export default defineEventHandler(async (event) => {
     '- Gere avaliacaoPorSecao com exatamente 5 itens: Profissional, Experiencias, Competencias, Formacao e Clareza escrita.',
     '- Cada item de avaliacaoPorSecao deve ter label e score de 0 a 10.',
     '- Linguagem simples em portugues do Brasil.',
+    desiredArea
+      ? '- Em pontosFracos, sugestoesMelhoria e observacoesAusentes, destaque lacunas relevantes para a area desejada quando fizer sentido.'
+      : '- Em pontosFracos, sugestoesMelhoria e observacoesAusentes, destaque lacunas gerais do curriculo.',
     '',
     'Texto do curriculo para analise:',
     textForAI,
@@ -326,6 +347,9 @@ export default defineEventHandler(async (event) => {
             schema: {
               type: 'object',
               properties: {
+                areaAlvo: {
+                  type: 'string',
+                },
                 resumoProfissional: {
                   type: 'string',
                 },
@@ -416,6 +440,7 @@ export default defineEventHandler(async (event) => {
                 'sugestoesMelhoria',
                 'dicasEntrevista',
                 'observacoesAusentes',
+                'areaAlvo',
               ],
               additionalProperties: false,
             },
@@ -437,7 +462,7 @@ export default defineEventHandler(async (event) => {
     throw toFriendlyError(502, 'Nao foi possivel analisar o curriculo neste momento. Tente novamente mais tarde.')
   }
 
-  const normalizedAnalysis = normalizeAnalysis(parsedResult)
+  const normalizedAnalysis = normalizeAnalysis(parsedResult, desiredArea)
 
   cacheStore.set(dedupeKey, {
     createdAt: now,

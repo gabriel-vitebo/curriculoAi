@@ -7,7 +7,15 @@
         <NuxtLink to="/" class="text-[1.1rem] font-semibold">
           &lt; Importar outro curriculo
         </NuxtLink>
-        <span class="inline-flex items-center gap-[10px] border border-ink bg-chip px-[14px] py-[6px] text-[0.76rem] uppercase tracking-[0.14em]">{{ route.query.file || 'Resultado da analise' }}</span>
+        <div class="flex flex-wrap justify-end gap-2">
+          <span class="inline-flex items-center gap-[10px] border border-ink bg-chip px-[14px] py-[6px] text-[0.76rem] uppercase tracking-[0.14em]">{{ route.query.file || 'Resultado da analise' }}</span>
+          <span
+            v-if="analysisAreaLabel"
+            class="inline-flex items-center gap-[10px] border border-ink bg-chip px-[14px] py-[6px] text-[0.76rem] uppercase tracking-[0.14em]"
+          >
+            Area: {{ analysisAreaLabel }}
+          </span>
+        </div>
       </div>
 
       <section v-if="isLoading" class="border-2 border-ink bg-surface p-6">
@@ -31,7 +39,7 @@
                 <ResultDonutChart :sections="analysis.distribuicaoQualidade" />
                 <div class="grid gap-2 text-[1rem]">
                   <div v-for="item in analysis.distribuicaoQualidade" :key="item.label" class="flex items-center gap-3">
-                    <span class="inline-block h-4 w-4 rounded-full" :style="{ background: item.color }" />
+                    <span class="inline-block h-4 w-4 rounded-full" :style="{ background: item.color }"></span>
                     <span><strong>{{ item.value }}%</strong> {{ item.label }}</span>
                   </div>
                 </div>
@@ -55,6 +63,9 @@
           <article class="border-2 border-ink bg-surface p-6">
             <header class="border-b-2 border-ink pb-3">
               <h3 class="m-0 text-[1.5rem]">Resumo profissional</h3>
+              <p v-if="analysis.areaAlvo" class="mt-2 text-sm text-muted-ink">
+                Avaliacao orientada para a area <strong>{{ analysis.areaAlvo }}</strong>.
+              </p>
             </header>
             <p class="mt-4">{{ analysis.resumoProfissional }}</p>
           </article>
@@ -136,9 +147,11 @@ import type { CvAnalysisResult } from '~/types/cv-analysis'
 
 const route = useRoute()
 const selectedCvFile = useSelectedCvFile()
+const selectedCvArea = useSelectedCvArea()
 const cvAnalysisResult = useCvAnalysisResult()
 
 const analysis = computed(() => cvAnalysisResult.value)
+const analysisAreaLabel = computed(() => analysis.value?.areaAlvo || selectedCvArea.value || String(route.query.area || '').trim())
 const isLoading = ref(false)
 const errorMessage = ref('')
 const copyButtonLabel = ref('Copiar relatorio')
@@ -162,6 +175,7 @@ onMounted(async () => {
   try {
     const formData = new FormData()
     formData.append('file', file, file.name)
+    formData.append('desiredArea', selectedCvArea.value.trim())
 
     const response = await $fetch<{ analysis: CvAnalysisResult, cached: boolean }>('/api/cv/analyze', {
       method: 'POST',
@@ -194,6 +208,7 @@ function buildReportText() {
   }
 
   const lines = [
+    `Area alvo: ${analysis.value.areaAlvo || 'Analise geral'}`,
     `Nota geral: ${analysis.value.notaGeral}/10`,
     `Senioridade estimada: ${analysis.value.senioridadeEstimada}`,
     '',

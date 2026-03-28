@@ -19,6 +19,7 @@ export interface CvDistributionItem {
 }
 
 export interface CvAnalysisResult {
+  areaAlvo: string
   resumoProfissional: string
   resumoOtimizado: string
   pontosFortes: string[]
