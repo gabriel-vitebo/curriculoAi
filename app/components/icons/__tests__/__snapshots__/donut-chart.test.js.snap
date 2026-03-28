@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`IconsDonutChart > renderiza o grafico de rosca com os segmentos informados 1`] = `
+"<svg viewBox="0 0 200 200" class="w-full max-w-[240px] -rotate-90" aria-label="Distribuicao da avaliacao">
+  <circle cx="100" cy="100" r="74" fill="none" stroke="rgba(47, 41, 35, 0.1)" stroke-width="26"></circle>
+  <circle cx="100" cy="100" r="74" fill="none" stroke-width="26" style="stroke: #b9d4a3; stroke-dasharray: 120 464.96; stroke-dashoffset: 0;"></circle>
+  <circle cx="100" cy="100" r="74" fill="none" stroke-width="26" style="stroke: #9bbbd5; stroke-dasharray: 170 464.96; stroke-dashoffset: -120;"></circle>
+  <circle cx="100" cy="100" r="74" fill="none" stroke-width="26" style="stroke: #e8c488; stroke-dasharray: 174.96 464.96; stroke-dashoffset: -290;"></circle>
+  <circle cx="100" cy="100" r="46" fill="#fffaf2"></circle>
+</svg>"
+`;
