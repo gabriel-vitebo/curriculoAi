@@ -24,6 +24,7 @@
     "release:dry": "semantic-release --dry-run"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.80",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "nuxt": "^4.3.1",
     "pdf-parse": "^2.4.5",

@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto'
 import { createError, getRequestIP, readMultipartFormData } from 'h3'
-import { PDFParse } from 'pdf-parse'
 import type { CvAnalysisResult, CvDistributionItem, CvSectionScore, SeniorityLevel } from '~/types/cv-analysis'
 
 type OpenAIResponse = {
@@ -20,6 +19,24 @@ type CachedAnalysis = {
 }
 
 const CACHE_KEY = '__cvAnalyzeCache'
+
+let pdfParseModulePromise: Promise<typeof import('pdf-parse')> | null = null
+
+async function loadPdfParse() {
+  if (!globalThis.DOMMatrix || !globalThis.ImageData || !globalThis.Path2D) {
+    const canvas = await import('@napi-rs/canvas')
+
+    Object.assign(globalThis, {
+      DOMMatrix: globalThis.DOMMatrix || canvas.DOMMatrix,
+      ImageData: globalThis.ImageData || canvas.ImageData,
+      Path2D: globalThis.Path2D || canvas.Path2D,
+    })
+  }
+
+  pdfParseModulePromise ||= import('pdf-parse')
+
+  return pdfParseModulePromise
+}
 
 function getCacheStore() {
   const globalScope = globalThis as typeof globalThis & {
@@ -261,6 +278,7 @@ export default defineEventHandler(async (event) => {
   let extractedText = ''
 
   try {
+    const { PDFParse } = await loadPdfParse()
     const parser = new PDFParse({ data: filePart.data })
     const parsed = await parser.getText()
     await parser.destroy()
