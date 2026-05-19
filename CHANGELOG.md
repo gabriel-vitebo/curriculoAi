@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.0.1...v2.1.0) (2026-05-19)
+
+### Features
+
+* implement PDF report generation and download functionality ([#8](https://github.com/gabriel-vitebo/curriculoAi/issues/8)) ([2ef5b1d](https://github.com/gabriel-vitebo/curriculoAi/commit/2ef5b1dd50be93d69cfb05fb26e8afdff417c74e))
+
 ## [2.0.1](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.0.0...v2.0.1) (2026-05-19)
 
 ## [2.0.0](https://github.com/gabriel-vitebo/curriculoAi/compare/v1.1.1...v2.0.0) (2026-03-28)
