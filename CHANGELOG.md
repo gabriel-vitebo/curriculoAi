@@ -1,3 +1,9 @@
+## [2.1.1](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.1.0...v2.1.1) (2026-05-19)
+
+### Bug Fixes
+
+* load pdf parser with canvas polyfills ([#9](https://github.com/gabriel-vitebo/curriculoAi/issues/9)) ([5870ae9](https://github.com/gabriel-vitebo/curriculoAi/commit/5870ae91cfb38ca5b560b134942487b1a816fc3c))
+
 ## [2.1.0](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.0.1...v2.1.0) (2026-05-19)
 
 ### Features
