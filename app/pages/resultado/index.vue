@@ -1,10 +1,10 @@
 <template>
-  <main class="mx-auto my-6 w-[min(1120px,calc(100%-32px))] border-2 border-ink bg-panel shadow-panel backdrop-blur-[14px] max-md:my-2 max-md:w-[min(100%,calc(100%-16px))]">
+  <main class="result-page mx-auto my-6 w-[min(1120px,calc(100%-32px))] border-2 border-ink bg-panel shadow-panel backdrop-blur-[14px] max-md:my-2 max-md:w-[min(100%,calc(100%-16px))]">
     <AppHeader />
 
-    <section class="grid gap-7 px-7 py-10 max-md:px-[18px]">
+    <section class="print-shell grid gap-7 px-7 py-10 max-md:px-[18px]">
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <NuxtLink to="/" class="text-[1.1rem] font-semibold">
+        <NuxtLink to="/" class="no-print text-[1.1rem] font-semibold">
           &lt; Importar outro curriculo
         </NuxtLink>
         <div class="flex flex-wrap justify-end gap-2">
@@ -34,7 +34,7 @@
       <template v-else-if="analysis">
         <section class="grid gap-[18px]">
           <article class="border-2 border-ink bg-surface p-6">
-            <div class="grid gap-8 min-[961px]:grid-cols-[1.05fr_1.2fr_180px]">
+            <div class="print-hero-grid grid gap-8 min-[961px]:grid-cols-[1.05fr_1.2fr_180px]">
               <div class="grid gap-4">
                 <ResultDonutChart :sections="analysis.distribuicaoQualidade" />
                 <div class="grid gap-2 text-[1rem]">
@@ -70,13 +70,13 @@
             <p class="mt-4">{{ analysis.resumoProfissional }}</p>
           </article>
 
-          <section class="grid gap-[18px] min-[861px]:grid-cols-3">
+          <section class="print-grid-three grid gap-[18px] min-[861px]:grid-cols-3">
             <InsightCard title="Pontos Fortes" :items="analysis.pontosFortes" />
             <InsightCard title="Pontos Fracos" :items="analysis.pontosFracos" />
             <InsightCard title="Sugestoes de Melhoria" :items="analysis.sugestoesMelhoria" />
           </section>
 
-          <section class="grid gap-[18px] min-[861px]:grid-cols-2">
+          <section class="print-grid-two grid gap-[18px] min-[861px]:grid-cols-2">
             <article class="border-2 border-ink bg-surface p-6">
               <header class="border-b-2 border-ink pb-3">
                 <h3 class="m-0 text-[1.5rem]">Melhoria no resumo</h3>
@@ -119,7 +119,7 @@
           </article>
         </section>
 
-        <div class="flex flex-wrap justify-center gap-4">
+        <div class="no-print flex flex-wrap justify-center gap-4">
           <button
             class="inline-flex min-h-12 items-center justify-center gap-2 border-2 border-ink bg-button-neutral bg-button-neutral-hover px-[18px] text-ink transition-[transform,background-color] duration-150 hover:-translate-y-px"
             type="button"
@@ -130,15 +130,18 @@
           <button
             class="inline-flex min-h-12 items-center justify-center gap-2 border-2 border-ink bg-button-positive bg-button-positive-hover px-[18px] text-ink transition-[transform,background-color] duration-150 hover:-translate-y-px"
             type="button"
+            :disabled="isDownloadingReport"
             @click="downloadReport"
           >
-            Baixar relatorio
+            {{ downloadButtonLabel }}
           </button>
         </div>
       </template>
     </section>
 
-    <AppFooter />
+    <div class="no-print">
+      <AppFooter />
+    </div>
   </main>
 </template>
 
@@ -155,6 +158,8 @@ const analysisAreaLabel = computed(() => analysis.value?.areaAlvo || selectedCvA
 const isLoading = ref(false)
 const errorMessage = ref('')
 const copyButtonLabel = ref('Copiar relatorio')
+const downloadButtonLabel = ref('Baixar relatorio')
+const isDownloadingReport = ref(false)
 
 const FALLBACK_ERROR_MESSAGE = 'Nao foi possivel analisar o curriculo neste momento. Tente novamente mais tarde.'
 
@@ -266,21 +271,117 @@ async function copyReport() {
   }
 }
 
-function downloadReport() {
-  const report = buildReportText()
-
-  if (!report) {
+async function downloadReport() {
+  if (!analysis.value || !import.meta.client || isDownloadingReport.value) {
     return
   }
 
-  const blob = new Blob([report], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
+  isDownloadingReport.value = true
+  downloadButtonLabel.value = 'Gerando PDF...'
 
-  link.href = url
-  link.download = 'curriculo-ai-relatorio.txt'
-  link.click()
+  try {
+    const response = await fetch('/api/cv/report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        analysis: analysis.value,
+        fileName: String(route.query.file || ''),
+        areaLabel: analysisAreaLabel.value,
+      }),
+    })
 
-  URL.revokeObjectURL(url)
+    if (!response.ok) {
+      throw new Error('Nao foi possivel gerar o PDF agora.')
+    }
+
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = buildReportFilename()
+    link.click()
+
+    URL.revokeObjectURL(url)
+    downloadButtonLabel.value = 'PDF baixado'
+    setTimeout(() => {
+      downloadButtonLabel.value = 'Baixar relatorio'
+    }, 1800)
+  } catch {
+    downloadButtonLabel.value = 'Falha ao baixar'
+    setTimeout(() => {
+      downloadButtonLabel.value = 'Baixar relatorio'
+    }, 1800)
+  } finally {
+    isDownloadingReport.value = false
+  }
+}
+
+function buildReportFilename() {
+  const originalName = String(route.query.file || '').trim()
+  const normalizedName = originalName.replace(/\.pdf$/i, '').trim()
+  const baseName = normalizedName || 'curriculo-ai-relatorio'
+
+  return `${baseName}-relatorio.pdf`
 }
 </script>
+
+<style scoped>
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  :global(html),
+  :global(body) {
+    margin: 0;
+    padding: 0;
+    background: #ffffff !important;
+  }
+
+  :global(body) {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .result-page {
+    width: 100% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    background: #fffaf2 !important;
+  }
+
+  .print-shell {
+    padding: 24px !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-hero-grid {
+    grid-template-columns: 1.05fr 1.2fr 180px !important;
+  }
+
+  .print-grid-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .print-grid-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  article,
+  section,
+  ul,
+  li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+</style>
