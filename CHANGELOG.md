@@ -1,3 +1,9 @@
+## [2.1.2](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.1.1...v2.1.2) (2026-05-20)
+
+### Bug Fixes
+
+* resolve imports ([#10](https://github.com/gabriel-vitebo/curriculoAi/issues/10)) ([e23c0a1](https://github.com/gabriel-vitebo/curriculoAi/commit/e23c0a15fd6a6b06464cbe2f2cf7b34cadd0f927))
+
 ## [2.1.1](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.1.0...v2.1.1) (2026-05-19)
 
 ### Bug Fixes
