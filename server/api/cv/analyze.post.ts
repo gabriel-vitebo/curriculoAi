@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { createError, getRequestIP, readMultipartFormData } from 'h3'
+import type { PDFParse } from 'pdf-parse'
 import type { CvAnalysisResult, CvDistributionItem, CvSectionScore, SeniorityLevel } from '~/types/cv-analysis'
 
 type OpenAIResponse = {
@@ -20,7 +21,11 @@ type CachedAnalysis = {
 
 const CACHE_KEY = '__cvAnalyzeCache'
 
-let pdfParseModulePromise: Promise<typeof import('pdf-parse')> | null = null
+type PdfParseModule = {
+  PDFParse: typeof PDFParse
+}
+
+let pdfParseModulePromise: Promise<PdfParseModule> | null = null
 
 async function loadPdfParse() {
   if (!globalThis.DOMMatrix || !globalThis.ImageData || !globalThis.Path2D) {
@@ -33,7 +38,14 @@ async function loadPdfParse() {
     })
   }
 
-  pdfParseModulePromise ||= import('pdf-parse')
+  pdfParseModulePromise ||= Promise.all([
+    import('pdf-parse'),
+    import('pdf-parse/worker'),
+  ]).then(([pdfParse, worker]) => {
+    pdfParse.PDFParse.setWorker(worker.getData())
+
+    return pdfParse
+  })
 
   return pdfParseModulePromise
 }
