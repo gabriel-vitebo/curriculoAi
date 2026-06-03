@@ -91,3 +91,154 @@
     box-shadow: 0 18px 60px rgba(51, 39, 26, 0.12);
   }
 }
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  img,
+  svg,
+  canvas,
+  video,
+  iframe {
+    max-width: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  @media (max-width: 768px) {
+    main,
+    main *,
+    main *::before,
+    main *::after {
+      min-width: 0;
+    }
+
+    main {
+      max-width: calc(100vw - 16px);
+      overflow-x: hidden;
+    }
+
+    main section,
+    main article,
+    main header,
+    main footer,
+    main nav,
+    main div,
+    main p,
+    main span,
+    main strong,
+    main a,
+    main button,
+    main input,
+    main li,
+    main h1,
+    main h2,
+    main h3 {
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    main > section,
+    main section section,
+    main article,
+    main [class*="bg-surface"],
+    main [class*="bg-card"] {
+      max-width: 100%;
+    }
+
+    main [class*=" p-6"],
+    main [class$=" p-6"],
+    main [class*=" px-7"],
+    main [class$=" px-7"] {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    main [class*=" gap-8"],
+    main [class$=" gap-8"] {
+      gap: 24px;
+    }
+
+    main [class*="gap-[18px]"],
+    main [class*="gap-5"] {
+      gap: 16px;
+    }
+
+    main .dropzone__icon {
+      width: min(72px, 42vw);
+    }
+
+    main button,
+    main input {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    main [class*="inline-flex"] {
+      max-width: 100%;
+    }
+
+    main [class*="justify-between"] {
+      justify-content: flex-start;
+    }
+
+    main h1 {
+      font-size: clamp(1.85rem, 11vw, 2.35rem);
+      line-height: 1.08;
+    }
+
+    main h3,
+    main .text-2xl,
+    main .text-\[1\.6rem\],
+    main .text-\[1\.5rem\] {
+      font-size: 1.35rem;
+      line-height: 1.2;
+    }
+
+    main .tracking-\[0\.14em\],
+    main .tracking-\[0\.12em\] {
+      letter-spacing: 0.08em;
+    }
+
+    main ul {
+      padding-left: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    main,
+    main > section {
+      width: calc(100vw - 12px);
+      max-width: calc(100vw - 12px);
+    }
+
+    main [class*=" p-6"],
+    main [class$=" p-6"],
+    main [class*=" p-5"],
+    main [class$=" p-5"] {
+      padding: 14px;
+    }
+
+    main [class*="px-[30px]"] {
+      padding-left: 22px;
+      padding-right: 14px;
+    }
+
+    main [class*="px-[22px]"] {
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    main .text-2xl {
+      font-size: 1.25rem;
+    }
+  }
+}
