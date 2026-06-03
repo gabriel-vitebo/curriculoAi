@@ -37,12 +37,6 @@
             <div class="print-hero-grid grid gap-8 min-[961px]:grid-cols-[1.05fr_1.2fr_180px]">
               <div class="grid gap-4">
                 <ResultDonutChart :sections="analysis.distribuicaoQualidade" />
-                <div class="grid gap-2 text-[1rem]">
-                  <div v-for="item in analysis.distribuicaoQualidade" :key="item.label" class="flex items-center gap-3">
-                    <span class="inline-block h-4 w-4 rounded-full" :style="{ background: item.color }"></span>
-                    <span><strong>{{ item.value }}%</strong> {{ item.label }}</span>
-                  </div>
-                </div>
               </div>
 
               <div class="grid gap-4">
