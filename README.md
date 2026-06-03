@@ -1,85 +1,100 @@
 # CurriculoAI
 
-Aplicacao web em `Nuxt 4` para analise de curriculos em PDF com apoio da OpenAI.
+Aplicacao web em Nuxt 4 para analisar curriculos em PDF com IA. O usuario envia um curriculo, pode informar uma area desejada e recebe um relatorio estruturado com nota, senioridade estimada, pontos fortes, lacunas, sugestoes de melhoria, resumo otimizado e dicas para entrevista.
 
-O usuario faz upload do curriculo, opcionalmente informa uma area-alvo como `Programacao front-end`, e recebe um relatorio com:
+O produto tambem permite copiar o relatorio em texto e baixar uma versao em PDF gerada no servidor.
 
-- nota geral
-- senioridade estimada
-- avaliacao por secao
-- distribuicao visual da qualidade
-- pontos fortes e fracos
-- sugestoes de melhoria
-- resumo otimizado
-- dicas para entrevista
-- observacoes ausentes ou nao identificadas
+## Funcionalidades
 
-Quando a area desejada e informada, a nota deixa de ser apenas uma avaliacao generica de qualidade e passa a considerar aderencia do curriculo ao contexto desejado.
+- Upload de curriculo em PDF por selecao ou drag and drop.
+- Validacao de tipo e tamanho do arquivo.
+- Extracao de texto do PDF no backend com `pdf-parse`.
+- Analise estruturada com OpenAI Responses API.
+- Campo opcional de area desejada para avaliar aderencia do curriculo a uma vaga ou objetivo.
+- Relatorio com nota geral, senioridade, avaliacao por secao e distribuicao visual da qualidade.
+- Listas de pontos fortes, pontos fracos, habilidades identificadas, sugestoes e informacoes ausentes.
+- Resumo profissional otimizado para reaproveitar no curriculo.
+- Copia do relatorio para a area de transferencia.
+- Download do relatorio em PDF via Puppeteer.
+- Cache temporario para evitar reanalises duplicadas do mesmo arquivo e area.
 
 ## Stack
 
 - `Nuxt 4`
 - `Vue 3`
 - `Tailwind CSS`
-- `Vitest` + `@nuxt/test-utils`
-- `ESLint`
-- `semantic-release`
+- `Nitro` server routes
 - `OpenAI Responses API`
 - `pdf-parse`
+- `@napi-rs/canvas`
+- `Puppeteer`
+- `Vitest` com `@nuxt/test-utils`
+- `ESLint`
+- `semantic-release`
 
-## Como O Produto Funciona
+## Requisitos
 
-### Fluxo do usuario
+- Node.js `24`
+- npm
+- Chave da OpenAI para usar a analise de curriculos
+
+As versoes de Node tambem estao registradas em `.nvmrc` e `.node-version`.
+
+## Instalacao
+
+```bash
+npm ci
+```
+
+Para iniciar o ambiente local:
+
+```bash
+npm run dev
+```
+
+Por padrao, a aplicacao fica disponivel em:
+
+```text
+http://localhost:3000
+```
+
+## Variaveis De Ambiente
+
+Crie um arquivo `.env` na raiz do projeto ou exporte as variaveis no ambiente.
+
+```bash
+NUXT_OPENAI_API_KEY=sua_chave_aqui
+```
+
+Variaveis opcionais:
+
+```bash
+NUXT_OPENAI_MODEL=gpt-4.1-mini
+NUXT_CV_MAX_PDF_BYTES=5242880
+NUXT_CV_MIN_TEXT_CHARS=180
+NUXT_CV_MAX_TEXT_CHARS_TO_AI=12000
+NUXT_CV_DUPLICATE_WINDOW_MS=120000
+APP_VERSION=dev
+```
+
+`NUXT_OPENAI_API_KEY` e obrigatoria para `POST /api/cv/analyze` e `POST /api/openai/analyze`.
+
+As demais configuracoes controlam modelo, limite de upload, minimo de texto extraido, tamanho maximo enviado para IA, janela de deduplicacao e versao exibida no relatorio.
+
+## Como Funciona
 
 1. O usuario seleciona um arquivo PDF na pagina inicial.
-2. Opcionalmente informa a area desejada.
-3. O usuario clica em `Enviar para analise`.
-4. A aplicacao envia o PDF para a rota `POST /api/cv/analyze`.
-5. O servidor extrai o texto do PDF.
-6. O texto e enviado para a OpenAI com um prompt estruturado.
-7. O frontend exibe o relatorio completo na tela de resultado.
+2. Opcionalmente informa uma area desejada, como `Programacao front-end`.
+3. O frontend navega para `/resultado` levando nome do arquivo e area na query string.
+4. A pagina de resultado envia `multipart/form-data` para `POST /api/cv/analyze`.
+5. O backend valida o PDF, extrai texto e monta um prompt objetivo.
+6. A OpenAI retorna um JSON seguindo schema estrito.
+7. O backend normaliza a resposta e devolve o relatorio para o frontend.
+8. O usuario pode copiar o texto do relatorio ou gerar um PDF com `POST /api/cv/report`.
 
-### Regra da area desejada
+Quando a area desejada e preenchida, a nota geral considera fortemente a aderencia do curriculo a esse objetivo. Sem area informada, a analise avalia qualidade geral, clareza, organizacao, impacto e completude.
 
-- Se a area for preenchida, a analise considera o quanto o curriculo esta alinhado com essa area.
-- Se a area ficar vazia, o comportamento volta ao modo original: analise generica do curriculo.
-
-Exemplo:
-
-- Um curriculo pode estar muito bem escrito.
-- Mesmo assim, se a pessoa informar `Programacao front-end` e o curriculo nao mostrar experiencia relevante nessa area, a nota pode cair.
-
-## Arquitetura
-
-### Frontend
-
-Principais arquivos:
-
-- [app/pages/index.vue](/Users/user/Documents/projetos/curriculoAi/app/pages/index.vue)
-  Tela inicial com selecao de PDF, campo de area desejada e CTA de envio.
-- [app/pages/resultado/index.vue](/Users/user/Documents/projetos/curriculoAi/app/pages/resultado/index.vue)
-  Tela que dispara a analise, trata loading/erro e renderiza o relatorio.
-- [app/composables/cv-analysis-state.ts](/Users/user/Documents/projetos/curriculoAi/app/composables/cv-analysis-state.ts)
-  Estado compartilhado do arquivo selecionado, area desejada e resultado da analise.
-- [app/types/cv-analysis.ts](/Users/user/Documents/projetos/curriculoAi/app/types/cv-analysis.ts)
-  Tipos TypeScript do contrato de analise.
-
-### Backend
-
-Principais rotas:
-
-- [server/api/cv/analyze.post.ts](/Users/user/Documents/projetos/curriculoAi/server/api/cv/analyze.post.ts)
-  Rota principal da aplicacao. Faz validacao do arquivo, extracao do PDF, prompt da OpenAI, normalizacao do resultado e cache de deduplicacao.
-- [server/api/openai/analyze.post.ts](/Users/user/Documents/projetos/curriculoAi/server/api/openai/analyze.post.ts)
-  Endpoint generico para enviar um texto simples para a OpenAI.
-- [server/api/health.get.ts](/Users/user/Documents/projetos/curriculoAi/server/api/health.get.ts)
-  Health-check simples da aplicacao.
-
-### UI Components
-
-Os componentes ficam em `app/components` e possuem testes de snapshot cobrindo toda a pasta.
-
-## Estrutura De Pastas
+## Estrutura Do Projeto
 
 ```text
 app/
@@ -89,295 +104,154 @@ app/
   composables/
   pages/
   types/
+config/
+  app-version.ts
 server/
   api/
-.github/
-  workflows/
-config/
+public/
 ```
 
-## Requisitos
+Arquivos principais:
 
-- `Node.js 24`
-- `npm`
-
-Arquivos de referencia de versao:
-
-- [/.nvmrc](/Users/user/Documents/projetos/curriculoAi/.nvmrc)
-- [/.node-version](/Users/user/Documents/projetos/curriculoAi/.node-version)
-
-## Instalacao
-
-```bash
-npm ci
-```
-
-Se o lockfile estiver fora de sincronia com o `package.json`, rode:
-
-```bash
-npm install
-```
-
-e commit o `package-lock.json` atualizado.
-
-## Variaveis De Ambiente
-
-As configuracoes principais estao em [nuxt.config.ts](/Users/user/Documents/projetos/curriculoAi/nuxt.config.ts).
-
-Como o projeto usa `runtimeConfig`, as variaveis podem ser passadas como variaveis de ambiente do Nuxt.
-
-### Obrigatoria
-
-```bash
-NUXT_OPENAI_API_KEY=sua_chave_aqui
-```
-
-### Opcionais
-
-```bash
-NUXT_OPENAI_MODEL=gpt-4.1-mini
-NUXT_CV_MAX_PDF_BYTES=5242880
-NUXT_CV_MIN_TEXT_CHARS=180
-NUXT_CV_MAX_TEXT_CHARS_TO_AI=12000
-NUXT_CV_DUPLICATE_WINDOW_MS=120000
-```
-
-### O que cada uma faz
-
-- `NUXT_OPENAI_API_KEY`
-  Chave da OpenAI usada no backend.
-- `NUXT_OPENAI_MODEL`
-  Modelo usado na Responses API.
-- `NUXT_CV_MAX_PDF_BYTES`
-  Tamanho maximo permitido para upload do PDF.
-- `NUXT_CV_MIN_TEXT_CHARS`
-  Quantidade minima de texto extraido para a analise ser considerada valida.
-- `NUXT_CV_MAX_TEXT_CHARS_TO_AI`
-  Limite de caracteres enviados para o modelo.
-- `NUXT_CV_DUPLICATE_WINDOW_MS`
-  Janela de tempo usada no cache de deduplicacao.
-
-## Rodando Em Desenvolvimento
-
-```bash
-npm run dev
-```
-
-Aplicacao disponivel em:
-
-```text
-http://localhost:3000
-```
-
-## Scripts Disponiveis
-
-```bash
-npm run dev
-npm run build
-npm run preview
-npm run lint
-npm run lint:fix
-npm test
-npm run test:watch
-npm run generate
-npm run release:dry
-npm run release
-```
+- `app/pages/index.vue`: tela inicial, upload do PDF e area desejada.
+- `app/pages/resultado/index.vue`: execucao da analise, renderizacao do relatorio, copia e download.
+- `app/composables/cv-analysis-state.ts`: estado compartilhado do arquivo, area e resultado.
+- `app/types/cv-analysis.ts`: contrato TypeScript do relatorio.
+- `server/api/cv/analyze.post.ts`: rota principal de analise de curriculo.
+- `server/api/cv/report.post.ts`: geracao de PDF do relatorio com Puppeteer.
+- `server/api/openai/analyze.post.ts`: rota auxiliar para enviar texto simples para OpenAI.
+- `server/api/health.get.ts`: health check.
+- `config/app-version.ts`: resolucao da versao exibida na aplicacao.
 
 ## Endpoints
 
 ### `POST /api/cv/analyze`
 
-Rota principal do produto.
+Analisa um curriculo em PDF.
 
-#### Entrada
+Entrada: `multipart/form-data`
 
-`multipart/form-data`
+- `file`: arquivo PDF do curriculo.
+- `desiredArea`: string opcional com a area desejada.
 
-Campos esperados:
+Saida:
 
-- `file`: PDF do curriculo
-- `desiredArea`: string opcional
+```json
+{
+  "analysis": {
+    "areaAlvo": "Programacao front-end",
+    "resumoProfissional": "...",
+    "resumoOtimizado": "...",
+    "pontosFortes": [],
+    "pontosFracos": [],
+    "habilidadesIdentificadas": [],
+    "senioridadeEstimada": "junior",
+    "notaGeral": 7.5,
+    "avaliacaoPorSecao": [],
+    "distribuicaoQualidade": [],
+    "sugestoesMelhoria": [],
+    "dicasEntrevista": [],
+    "observacoesAusentes": [],
+    "avisoAutomacao": "..."
+  },
+  "cached": false
+}
+```
 
-#### Comportamento
+Possiveis falhas incluem arquivo ausente, tipo invalido, PDF grande demais, texto insuficiente, erro de leitura do PDF ou falha na chamada da OpenAI.
 
-- valida tipo e tamanho do arquivo
-- extrai texto com `pdf-parse`
-- rejeita curriculos com pouco conteudo
-- monta prompt com ou sem area-alvo
-- solicita resposta estruturada em JSON para a OpenAI
-- normaliza dados faltantes
-- retorna um objeto pronto para o frontend
+### `POST /api/cv/report`
+
+Gera um PDF a partir de uma analise ja obtida.
+
+Entrada: `application/json`
+
+- `analysis`: objeto `CvAnalysisResult`.
+- `fileName`: nome original do curriculo.
+- `areaLabel`: area exibida no relatorio.
+
+Saida: arquivo `application/pdf` com `Content-Disposition: attachment`.
 
 ### `POST /api/openai/analyze`
 
-Endpoint auxiliar para enviar um `input` textual simples para a OpenAI.
+Endpoint auxiliar para testar uma entrada textual simples com o modelo configurado.
+
+Entrada:
+
+```json
+{
+  "input": "Texto para analisar"
+}
+```
+
+Saida:
+
+```json
+{
+  "model": "gpt-4.1-mini",
+  "outputText": "..."
+}
+```
 
 ### `GET /api/health`
 
-Retorna:
+Retorna status simples da aplicacao.
 
 ```json
 {
   "ok": true,
-  "timestamp": "2026-03-28T00:00:00.000Z"
+  "timestamp": "2026-06-03T00:00:00.000Z"
 }
 ```
 
-## Cache E Deduplicacao
+## Scripts
 
-A rota principal usa um cache simples em memoria do processo para evitar recomputar a mesma analise em uma janela curta.
-
-Hoje a chave de deduplicacao considera:
-
-- IP da requisicao
-- hash do PDF
-- hash da area desejada
-
-Isso evita reutilizar uma analise antiga quando o usuario envia o mesmo PDF, mas muda a area.
-
-Observacao importante:
-
-- esse cache e util para desenvolvimento e pequenas cargas
-- ele nao e persistente
-- ele nao e compartilhado entre multiplas instancias
-- ele e perdido quando o processo reinicia
-
-Se o projeto crescer, o ideal e migrar para um cache externo como Redis.
+```bash
+npm run dev          # servidor de desenvolvimento
+npm run build        # build de producao
+npm run preview      # preview do build
+npm run generate     # geracao estatica do Nuxt
+npm run lint         # verificacao ESLint
+npm run lint:fix     # correcao automatica do ESLint
+npm test             # testes unitarios/snapshot
+npm run test:watch   # testes em modo watch
+npm run release:dry  # simula release sem publicar
+npm run release      # publica release via semantic-release
+```
 
 ## Testes
 
-O projeto usa `Vitest` com ambiente `nuxt`.
-
-Rodar a suite:
+Os testes usam `Vitest` com ambiente `nuxt`.
 
 ```bash
 npm test
 ```
 
-Hoje a base possui testes de snapshot para todos os componentes em `app/components`.
+A suite atual cobre principalmente componentes de UI e snapshots em `app/components/**/__tests__`.
 
-## Qualidade De Codigo
-
-Lint:
-
-```bash
-npm run lint
-```
-
-Correcao automatica:
-
-```bash
-npm run lint:fix
-```
-
-## Build De Producao
+## Build E Producao
 
 ```bash
 npm run build
-```
-
-Para testar localmente o build:
-
-```bash
 npm run preview
 ```
 
-## CI E Release
+Para producao, configure ao menos `NUXT_OPENAI_API_KEY`. O endpoint de relatorio usa Puppeteer em modo headless com `--no-sandbox` e `--disable-setuid-sandbox`, o que facilita execucao em containers e ambientes restritos.
 
-### Testes automatizados
+## Release
 
-Workflow:
+O projeto usa `semantic-release` na branch `main`, com preset `conventionalcommits`.
 
-- [run-tests.yml](/Users/user/Documents/projetos/curriculoAi/.github/workflows/run-tests.yml)
+O fluxo atual:
 
-Executa em:
+- analisa commits;
+- gera notas de release;
+- atualiza `CHANGELOG.md`;
+- cria commit `chore(release): <versao> [skip ci]`;
+- publica release no GitHub.
 
-- `push`
-- `pull_request`
-
-Passos:
-
-1. checkout
-2. setup do Node via `.nvmrc`
-3. `npm ci`
-4. `npm test`
-
-### Release automatizada
-
-Workflow:
-
-- [release.yml](/Users/user/Documents/projetos/curriculoAi/.github/workflows/release.yml)
-
-Executa em `push` para `main` e usa `semantic-release`.
-
-Passos:
-
-1. checkout com historico completo
-2. setup do Node via `.nvmrc`
-3. `npm ci`
-4. `npm run build`
-5. `npm run release`
-
-## Convencao De Commits
-
-O projeto usa `semantic-release`, entao e recomendado usar `Conventional Commits`.
-
-Exemplos:
-
-```bash
-feat: add area-based CV analysis
-fix: prevent cache reuse when desired area changes
-docs: rewrite project README
-```
-
-## Limitacoes Atuais
-
-- cache apenas em memoria
-- sem autenticacao
-- sem persistencia de historico de analises
-- sem fila assicrona para processamento pesado
-- dependencia de texto extraivel do PDF
-- a qualidade da resposta depende da qualidade do curriculo e do modelo configurado
-
-## Melhorias Futuras Sugeridas
-
-- comparacao por descricao de vaga, nao apenas area
-- historico local ou persistente de analises
-- exportacao do relatorio em PDF
-- observabilidade estruturada
-- rate limiting
-- testes do backend para a rota `POST /api/cv/analyze`
-- cache distribuido
-
-## Troubleshooting
-
-### `OPENAI_API_KEY nao configurada no servidor`
-
-Defina:
-
-```bash
-NUXT_OPENAI_API_KEY=...
-```
-
-### `npm ci` falha no CI
-
-Confira se:
-
-- o workflow esta usando a versao do Node definida em `.nvmrc`
-- `package.json` e `package-lock.json` estao sincronizados
-
-### PDF valido, mas analise falha
-
-Possiveis causas:
-
-- PDF com texto nao extraivel
-- arquivo grande demais
-- pouco texto util no curriculo
-- falha temporaria da OpenAI
+Commits do tipo `chore` tambem geram release `patch`, conforme `release.config.mjs`.
 
 ## Licenca
 
-Este projeto esta licenciado sob a licenca `MIT`.
-
-Veja o arquivo [LICENSE](/Users/user/Documents/projetos/curriculoAi/LICENSE).
+MIT. Veja `LICENSE`.
