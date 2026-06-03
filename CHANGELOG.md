@@ -1,3 +1,9 @@
+## [2.1.3](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.1.2...v2.1.3) (2026-06-03)
+
+### Bug Fixes
+
+* mobile layout ([#11](https://github.com/gabriel-vitebo/curriculoAi/issues/11)) ([a73bbed](https://github.com/gabriel-vitebo/curriculoAi/commit/a73bbed75bf571f5ca90c7e82ef6a803c3c3b440))
+
 ## [2.1.2](https://github.com/gabriel-vitebo/curriculoAi/compare/v2.1.1...v2.1.2) (2026-05-20)
 
 ### Bug Fixes
